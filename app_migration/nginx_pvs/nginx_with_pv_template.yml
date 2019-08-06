@@ -89,7 +89,7 @@ objects:
               readOnly: false
             - mountPath: "/usr/share/nginx/html"
               name: ${NAME}-html
-              readOnly: true
+              readOnly: false
   
 - apiVersion: v1
   kind: Service
