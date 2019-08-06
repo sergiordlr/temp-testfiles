@@ -1,0 +1,154 @@
+# Copyright 2017 the Heptio Ark contributors.
+#
+# Popular example from velero tweaked to deploy in OpenShift
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: template.openshift.io/v1
+kind: Template
+labels:
+  template: mysql-persistent-template
+message: |-
+  Creates a simple nginx app with two pv
+
+objects:
+- apiVersion: v1
+  kind: Namespace
+  metadata:
+    name: ${NAMESPACE}
+    labels:
+      app: ${NAME}
+  
+- kind: PersistentVolumeClaim
+  apiVersion: v1
+  metadata:
+    name: ${NAME}-logs
+    namespace: ${NAMESPACE}
+    labels:
+      app: ${NAME}
+  spec:
+    accessModes:
+      - ${LOGS_ACCESSMODE}
+    storageClassName: ${LOGS_STORAGECLASS}
+    resources:
+      requests:
+        storage: 50Mi
+  
+- kind: PersistentVolumeClaim
+  apiVersion: v1
+  metadata:
+    name: ${NAME}-html
+    namespace: ${NAMESPACE}
+    labels:
+      app: ${NAME}
+  spec:
+    accessModes:
+      - ${HTML_ACCESSMODE}
+    storageClassName: ${HTML_STORAGECLASS}
+    resources:
+      requests:
+        storage: 50Mi
+  
+- apiVersion: apps/v1beta1
+  kind: Deployment
+  metadata:
+    name: ${NAME}-deployment
+    namespace: ${NAMESPACE}
+  spec:
+    replicas: 1
+    template:
+      metadata:
+        labels:
+          app: ${NAME}
+      spec:
+        volumes:
+          - name: ${NAME}-logs
+            persistentVolumeClaim:
+             claimName: ${NAME}-logs
+          - name: ${NAME}-html
+            persistentVolumeClaim:
+             claimName: ${NAME}-html
+        containers:
+        - image: docker.io/twalter/openshift-nginx
+          name: ${NAME}
+          ports:
+          - containerPort: 8081
+          volumeMounts:
+            - mountPath: "/var/log/nginx"
+              name: ${NAME}-logs
+              readOnly: false
+            - mountPath: "/usr/share/nginx/html"
+              name: ${NAME}-html
+              readOnly: true
+  
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: ${NAME}
+    name: my-${NAME}
+    namespace: ${NAMESPACE}
+  spec:
+    ports:
+    - port: 8081
+      targetPort: 8081
+    selector:
+      app: ${NAME}
+    type: LoadBalancer
+  
+- apiVersion: route.openshift.io/v1
+  kind: Route
+  metadata:
+    name: my-${NAME}
+    namespace: ${NAMESPACE}
+    labels:
+      app: ${NAME}
+      service: my-${NAME}
+  spec:
+    to:
+      kind: Service
+      name: my-${NAME}
+    port:
+      targetPort: 8081
+  
+parameters:
+- description: Storage class to be used in the logs volume.
+  displayName: Logs Storage class
+  name: LOGS_STORAGECLASS
+  required: false
+  value: ""
+- description: Storage class to be used in the html volume.
+  displayName: Html Storage class
+  name: HTML_STORAGECLASS
+  required: false
+  value: ""
+- description: Access mode to be used in the html volume.
+  displayName: Html Access Mode
+  name: HTML_ACCESSMODE
+  required: true
+  value: "ReadWriteOnce"
+- description: Access mode to be used in the logs volume.
+  displayName: Logs access mode
+  name: LOGS_ACCESSMODE
+  required: true
+  value: "ReadWriteOnce"
+- description: Namespace used for the deployment.
+  displayName: Namespace
+  name: NAMESPACE
+  required: true
+  value: "nginx-example"
+- description: Name used for the application.
+  displayName: Name
+  name: NAME
+  required: true
+  value: "nginx"
