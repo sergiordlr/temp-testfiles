@@ -93,6 +93,16 @@ parameters:
   name: NAMESPACE
   required: true
   value: openshift
+- description: Storage class to be used by de PCV
+  displayName: Storage Class
+  name: PVC_STORAGECLASS
+  required: false
+  value: ""
+- description: Access mode to be used by de PCV
+  displayName: Acces Mode
+  name: PVC_ACCESSMODE
+  required: true
+  value: "ReadWriteOnce"
 objects:
 - apiVersion: v1
   kind: BuildConfig
@@ -208,6 +218,19 @@ objects:
     - generic:
         secret: ${GENERIC_WEBHOOK_SECRET}
       type: Generic
+- kind: PersistentVolumeClaim
+  apiVersion: v1
+  metadata:
+    name: ${DATABASE_SERVICE_NAME}-data
+    labels:
+      app: ${NAME}
+  spec:
+    accessModes:
+      - ${PVC_ACCESSMODE}
+    storageClassName: ${PVC_STORAGECLASS}
+    resources:
+      requests:
+        storage: 1Gi
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
@@ -334,9 +357,13 @@ objects:
           - mountPath: /var/lib/mongodb/data
             name: ${DATABASE_SERVICE_NAME}-data
         volumes:
-        - emptyDir:
-            medium: ""
-          name: ${DATABASE_SERVICE_NAME}-data
+          - name: ${DATABASE_SERVICE_NAME}-data
+            persistentVolumeClaim:
+             claimName: ${DATABASE_SERVICE_NAME}-data
+     #   volumes:
+     #   - emptyDir:
+     #       medium: ""
+     #     name: ${DATABASE_SERVICE_NAME}-data
     triggers:
     - imageChangeParams:
         automatic: true
