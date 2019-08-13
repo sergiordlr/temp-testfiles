@@ -1,4 +1,4 @@
-package org.infinispan.quickstart.openshift.shared.helloworld;
+package infinispan;
 
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.SaslQop;
