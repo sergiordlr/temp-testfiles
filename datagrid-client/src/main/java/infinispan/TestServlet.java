@@ -43,8 +43,8 @@ public class TestServlet extends HttpServlet {
         //builder.addServer().host()
         //        .port(Integer.parseInt));
         cacheManager = new RemoteCacheManager(cfg.build());
-        //cache = cacheManager.getCache("default");
-        cache = cacheManager.getCache();
+        cache = cacheManager.getCache("default");
+        //cache = cacheManager.getCache();
 
         System.out.println("Loaded Cache " + cache);
     }
