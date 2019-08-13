@@ -34,7 +34,7 @@ public class TestServlet extends HttpServlet {
     @Override
     public void init() {
 
-        String SVC_DNS_NAME =  System.getenv("HOTROD_SERVICE")
+        String SVC_DNS_NAME =  System.getenv("HOTROD_SERVICE");
         String APP_NAME = SVC_DNS_NAME;
         //String  =  System.getenv("HOTROD_SERVICE_PORT")
 
