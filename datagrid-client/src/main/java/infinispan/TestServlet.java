@@ -75,7 +75,7 @@ public class TestServlet extends HttpServlet {
                         out.println("Added Player"); 
             cache.put(randomId, player);
 
-            out.println("Added Player: " + cache.get(randomId));
+            out.println("Added Player ID[" + randomId + "]: " + cache.get(randomId));
              
         } catch (IOException e) {
             // TODO Auto-generated catch block
