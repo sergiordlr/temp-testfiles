@@ -79,7 +79,7 @@ public class TestServlet extends HttpServlet {
             out.println("Added Player ID[" + randomId + "]: " + cache.get(randomId));
 
             for ( Object k: cache.keySet()){
-                out.println("Key [" + k.getClass() + "] " ;
+                out.println("Key [" + k.getClass() + "] " );
             }
              
         } catch (IOException e) {
