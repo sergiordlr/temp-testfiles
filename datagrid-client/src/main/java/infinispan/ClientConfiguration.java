@@ -32,6 +32,7 @@ class ClientConfiguration {
       final ConfigurationBuilder cfg = new ConfigurationBuilder();
 
       cfg
+         .marshaller("org.infinispan.client.hotrod.marshall.ApacheAvroMarshaller")
          .addServer()
             .host(svcName)
             .port(11222)
