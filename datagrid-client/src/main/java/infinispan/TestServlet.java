@@ -27,7 +27,7 @@ public class TestServlet extends HttpServlet {
     ArrayList<Player> list = new ArrayList<Player>();
 
     private RemoteCacheManager cacheManager;
-    private RemoteCache<Object, Object> cache;
+    private RemoteCache<String, Object> cache;
     private static final String USER = "test";
     private static final String PASSWORD = "changeme";
 
@@ -78,8 +78,8 @@ public class TestServlet extends HttpServlet {
 
             out.println("Added Player ID[" + randomId + "]: " + cache.get(randomId));
 
-            for ( Object k: cache.keySet()){
-                out.println("Key [" + k.getClass() + "] " );
+            for ( String k: cache.keySet()){
+                out.println("Key [" + k + "] " );
             }
              
         } catch (IOException e) {
