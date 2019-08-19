@@ -32,6 +32,8 @@ class ClientConfiguration {
 
       final ConfigurationBuilder cfg = new ConfigurationBuilder();
 
+      ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+
       cfg
          //.marshaller("org.infinispan.client.hotrod.marshall.ApacheAvroMarshaller")
          .addServer()
@@ -48,8 +50,10 @@ class ClientConfiguration {
             .saslQop(SaslQop.AUTH)
          .ssl()
             .enable()
-            .trustStoreFileName(TRUSTSTORE_PATH)
-            .trustStorePassword(TRUSTSTORE_PASSWORD);
+            //.trustStoreFileName(TRUSTSTORE_PATH)
+            //.trustStorePassword(TRUSTSTORE_PASSWORD);
+            .trustStoreFileName(tccl.getResource("truststore.jks").getPath())
+            .trustStorePassword("mykeystorepass".toCharArray());
 
       return cfg;
    }
