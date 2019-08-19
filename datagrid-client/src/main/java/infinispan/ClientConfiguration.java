@@ -21,8 +21,8 @@ class ClientConfiguration {
 
    private static final String CRT_PATH = "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt";
    private static final char[] TRUSTSTORE_PASSWORD = "secret".toCharArray();
-   //private static final String TRUSTSTORE_PATH = "truststore.pkcs12";
-   private static final String TRUSTSTORE_PATH = "keystore.jks";
+   private static final String TRUSTSTORE_PATH = "truststore.pkcs12";
+   //private static final String TRUSTSTORE_PATH = "keystore.jks";
 
    private ClientConfiguration() {
    }
@@ -44,12 +44,12 @@ class ClientConfiguration {
             .password(password)
             .realm("ApplicationRealm")
             .serverName(saslName)
-            //.saslMechanism("DIGEST-MD5")
-            .saslQop(SaslQop.AUTH);
-         //.ssl()
-         //   .enable()
-         //   .trustStoreFileName(TRUSTSTORE_PATH)
-         //   .trustStorePassword(TRUSTSTORE_PASSWORD);
+            .saslMechanism("DIGEST-MD5")
+            .saslQop(SaslQop.AUTH)
+         .ssl()
+            .enable()
+            .trustStoreFileName(TRUSTSTORE_PATH)
+            .trustStorePassword(TRUSTSTORE_PASSWORD);
 
       return cfg;
    }
