@@ -37,7 +37,7 @@ public class CreateCacheServlet extends HttpServlet {
 
         String SVC_DNS_NAME =  System.getenv("HOTROD_SERVICE");
         String SVC_PORT =  System.getenv("HOTROD_SERVICE_PORT");
-        String APP_NAME = SVC_DNS_NAME;
+        String APP_NAME =  System.getenv("APP_NAME");
         //String  =  System.getenv("HOTROD_SERVICE_PORT")
 
         System.out.println("APP " + APP_NAME);

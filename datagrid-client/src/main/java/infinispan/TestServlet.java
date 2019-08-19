@@ -36,7 +36,8 @@ public class TestServlet extends HttpServlet {
 
         String SVC_DNS_NAME =  System.getenv("HOTROD_SERVICE");
         String SVC_PORT =  System.getenv("HOTROD_SERVICE_PORT");
-        String APP_NAME = SVC_DNS_NAME;
+        //String APP_NAME = SVC_DNS_NAME;
+        String APP_NAME =  System.getenv("APP_NAME");
         //String  =  System.getenv("HOTROD_SERVICE_PORT")
 
         ConfigurationBuilder cfg = ClientConfiguration.create(SVC_DNS_NAME, SVC_PORT, APP_NAME, USER, PASSWORD);
