@@ -45,7 +45,7 @@ class ClientConfiguration {
             .realm("ApplicationRealm")
             .serverName(saslName)
             .saslMechanism("DIGEST-MD5")
-            .saslQop(SaslQop.AUTH)
+            .saslQop(SaslQop.AUTH);
          //.ssl()
          //   .enable()
          //   .trustStoreFileName(TRUSTSTORE_PATH)
