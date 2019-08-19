@@ -52,7 +52,8 @@ class ClientConfiguration {
             .enable()
             //.trustStoreFileName(TRUSTSTORE_PATH)
             //.trustStorePassword(TRUSTSTORE_PASSWORD);
-            .trustStoreFileName(tccl.getResource("truststore.jks").getPath())
+            //.trustStoreFileName(tccl.getResource("truststore.jks").getPath())
+            .trustStoreFileName("/etc/datagrid-secret-volume/keystore.jks")
             .trustStorePassword("mykeystorepass".toCharArray());
 
       return cfg;
