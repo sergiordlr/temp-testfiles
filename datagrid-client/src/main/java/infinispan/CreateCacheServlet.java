@@ -40,6 +40,7 @@ public class CreateCacheServlet extends HttpServlet {
         String APP_NAME = SVC_DNS_NAME;
         //String  =  System.getenv("HOTROD_SERVICE_PORT")
 
+        System.out.println("APP " + APP_NAME);
         ConfigurationBuilder cfg = ClientConfiguration.create(SVC_DNS_NAME, SVC_PORT, APP_NAME, USER, PASSWORD);
 
         //builder.addServer().host()

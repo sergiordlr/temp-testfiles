@@ -45,7 +45,7 @@ class ClientConfiguration {
             .username(user)
             .password(password)
             .realm("ApplicationRealm")
-            .serverName("hotrod/" + saslName)
+            .serverName(saslName)
             .saslMechanism("DIGEST-MD5")
             .saslQop(SaslQop.AUTH)
          .ssl()
