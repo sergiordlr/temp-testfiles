@@ -20,26 +20,34 @@ import java.util.List;
 class ClientConfiguration {
 
    private static final String CRT_PATH = "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt";
-   private static final char[] TRUSTSTORE_PASSWORD = "secret".toCharArray();
-   private static final String TRUSTSTORE_PATH = "truststore.pkcs12";
+   //private static final char[] KUBE_TRUSTSTORE_PASSWORD = "secret".toCharArray();
+   private static final String KUBE_TRUSTSTORE_PASSWORD = "secret";
+   private static final String KUBE_TRUSTSTORE_PATH = "truststore.pkcs12";
    //private static final String TRUSTSTORE_PATH = "keystore.jks";
 
    private ClientConfiguration() {
    }
 
    static ConfigurationBuilder create(String svcName, String port, String saslName, String user, String password) {
-      createTruststoreFromCrtFile(CRT_PATH, TRUSTSTORE_PATH, TRUSTSTORE_PASSWORD);
+
+      String TRUSTSTORE_PATH = System.getenv("TRUSTSTORE_PATH");
+      String TRUSTSTORE_PASSWORD = System.getenv("TRUSTSTORE_PASSWORD");
+      String use_kube_truststore = System.getenv("USE_KUBE_TRUSTSTORE");
+
+      if ( use_kube_truststore != null && use_kube_truststore.toLowerCase().equals("true") ) {
+          createTruststoreFromCrtFile(CRT_PATH, TRUSTSTORE_PATH, TRUSTSTORE_PASSWORD);
+          TRUSTSTORE_PATH = KUBE_TRUSTSTORE_PATH;
+          TRUSTSTORE_PASSWORD = KUBE_TRUSTSTORE_PASSWORD;
+      } 
+
 
       final ConfigurationBuilder cfg = new ConfigurationBuilder();
-
-      ClassLoader tccl = Thread.currentThread().getContextClassLoader();
 
       cfg
          //.marshaller("org.infinispan.client.hotrod.marshall.ApacheAvroMarshaller")
          .addServer()
             .host(svcName)
             .port(Integer.parseInt(port))
-            //.port(11333)
          .security().authentication()
             .enable()
             .username(user)
@@ -50,20 +58,19 @@ class ClientConfiguration {
             .saslQop(SaslQop.AUTH)
          .ssl()
             .enable()
-            //.trustStoreFileName(TRUSTSTORE_PATH)
-            //.trustStorePassword(TRUSTSTORE_PASSWORD);
-            //.trustStoreFileName(tccl.getResource("truststore.jks").getPath())
-            .trustStoreFileName("/etc/datagrid-secret-volume/keystore.jks")
-            .trustStorePassword("mykeystorepass".toCharArray());
+            .trustStoreFileName(TRUSTSTORE_PATH)
+            .trustStorePassword(TRUSTSTORE_PASSWORD.toCharArray());
+            //.trustStoreFileName("/etc/datagrid-secret-volume/keystore.jks")
+            //.trustStorePassword("mykeystorepass".toCharArray());
 
       return cfg;
    }
 
-   private static void createTruststoreFromCrtFile(String crtPath, String tsPath, char[] password) {
+   private static void createTruststoreFromCrtFile(String crtPath, String tsPath, String password) {
       createTruststore(parseCrtFile(crtPath), tsPath, password);
    }
 
-   private static void createTruststore(List<String> certs, String path, char[] password) {
+   private static void createTruststore(List<String> certs, String path, String password) {
       try {
          try (FileOutputStream output = new FileOutputStream(path)) {
             KeyStore trustStore = KeyStore.getInstance("PKCS12");
@@ -79,7 +86,7 @@ class ClientConfiguration {
                   trustStore.setCertificateEntry(alias + i, certificate);
                }
             }
-            trustStore.store(output, password);
+            trustStore.store(output, password.toCharArray());
          }
       } catch (Exception e) {
          throw new RuntimeException(e);
