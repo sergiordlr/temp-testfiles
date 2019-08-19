@@ -27,7 +27,7 @@ class ClientConfiguration {
    private ClientConfiguration() {
    }
 
-   static ConfigurationBuilder create(String svcName, String saslName, String user, String password) {
+   static ConfigurationBuilder create(String svcName, String port, String saslName, String user, String password) {
       createTruststoreFromCrtFile(CRT_PATH, TRUSTSTORE_PATH, TRUSTSTORE_PASSWORD);
 
       final ConfigurationBuilder cfg = new ConfigurationBuilder();
@@ -36,7 +36,7 @@ class ClientConfiguration {
          //.marshaller("org.infinispan.client.hotrod.marshall.ApacheAvroMarshaller")
          .addServer()
             .host(svcName)
-            .port(11222)
+            .port(Integer.parseInt(port))
             //.port(11333)
          .security().authentication()
             .enable()

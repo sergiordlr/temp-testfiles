@@ -35,10 +35,11 @@ public class TestServlet extends HttpServlet {
     public void init() {
 
         String SVC_DNS_NAME =  System.getenv("HOTROD_SERVICE");
+        String SVC_PORT =  System.getenv("HOTROD_SERVICE_PORT");
         String APP_NAME = SVC_DNS_NAME;
         //String  =  System.getenv("HOTROD_SERVICE_PORT")
 
-        ConfigurationBuilder cfg = ClientConfiguration.create(SVC_DNS_NAME, APP_NAME, USER, PASSWORD);
+        ConfigurationBuilder cfg = ClientConfiguration.create(SVC_DNS_NAME, SVC_PORT, APP_NAME, USER, PASSWORD);
 
         //builder.addServer().host()
         //        .port(Integer.parseInt));
