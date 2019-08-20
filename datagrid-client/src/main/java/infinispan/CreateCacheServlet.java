@@ -28,28 +28,15 @@ public class CreateCacheServlet extends HttpServlet {
     ArrayList<Player> list = new ArrayList<Player>();
 
     private RemoteCacheManager cacheManager;
-    private RemoteCache<String, Object> cache;
-    private static final String USER = "test";
-    private static final String PASSWORD = "changeme";
 
     @Override
     public void init() {
 
-        String SVC_DNS_NAME =  System.getenv("HOTROD_SERVICE");
-        String SVC_PORT =  System.getenv("HOTROD_SERVICE_PORT");
-        String APP_NAME =  System.getenv("APP_NAME");
-        //String  =  System.getenv("HOTROD_SERVICE_PORT")
+        ConfigurationBuilder cfg = ClientConfiguration.create();
 
-        System.out.println("APP " + APP_NAME);
-        ConfigurationBuilder cfg = ClientConfiguration.create(SVC_DNS_NAME, SVC_PORT, APP_NAME, USER, PASSWORD);
-
-        //builder.addServer().host()
-        //        .port(Integer.parseInt));
         cacheManager = new RemoteCacheManager(cfg.build());
-        cache = cacheManager.getCache("default");
-        //cache = cacheManager.getCache();
 
-        System.out.println("Loaded Cache " + cache);
+        System.out.println("Loaded Manager");
     }
         
     protected void doGet(HttpServletRequest req, HttpServletResponse res) {
@@ -58,15 +45,10 @@ public class CreateCacheServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse res) {
-        // Here the request is put in asynchronous mode
         res.setContentType("text/html");
-
-
-
 
         String cacheName = req.getParameter("name");
 
-        // Actual logic goes here.
         PrintWriter out = null;
         try {
             out = res.getWriter();
@@ -81,7 +63,6 @@ public class CreateCacheServlet extends HttpServlet {
 
              
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 

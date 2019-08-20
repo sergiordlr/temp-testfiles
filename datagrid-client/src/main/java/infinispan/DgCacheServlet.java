@@ -30,24 +30,15 @@ public class DgCacheServlet extends HttpServlet {
     ArrayList<Player> list = new ArrayList<Player>();
 
     private RemoteCacheManager cacheManager;
-    private RemoteCache<String, Object> cache;
-    private static final String USER = "test";
-    private static final String PASSWORD = "changeme";
 
     @Override
     public void init() {
 
-        String SVC_DNS_NAME =  System.getenv("HOTROD_SERVICE");
-        String SVC_PORT =  System.getenv("HOTROD_SERVICE_PORT");
-        String APP_NAME =  System.getenv("APP_NAME");
-
-        System.out.println("APP " + APP_NAME);
-        ConfigurationBuilder cfg = ClientConfiguration.create(SVC_DNS_NAME, SVC_PORT, APP_NAME, USER, PASSWORD);
+        ConfigurationBuilder cfg = ClientConfiguration.create();
 
         cacheManager = new RemoteCacheManager(cfg.build());
-        cache = cacheManager.getCache("default");
 
-        System.out.println("Loaded Cache " + cache);
+        System.out.println("Loaded Manager");
     }
         
     protected void doGet(HttpServletRequest req, HttpServletResponse res) {

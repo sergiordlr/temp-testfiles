@@ -28,25 +28,13 @@ public class TestServlet extends HttpServlet {
 
     private RemoteCacheManager cacheManager;
     private RemoteCache<String, Object> cache;
-    private static final String USER = "test";
-    private static final String PASSWORD = "changeme";
 
     @Override
     public void init() {
+        ConfigurationBuilder cfg = ClientConfiguration.create();
 
-        String SVC_DNS_NAME =  System.getenv("HOTROD_SERVICE");
-        String SVC_PORT =  System.getenv("HOTROD_SERVICE_PORT");
-        //String APP_NAME = SVC_DNS_NAME;
-        String APP_NAME =  System.getenv("APP_NAME");
-        //String  =  System.getenv("HOTROD_SERVICE_PORT")
-
-        ConfigurationBuilder cfg = ClientConfiguration.create(SVC_DNS_NAME, SVC_PORT, APP_NAME, USER, PASSWORD);
-
-        //builder.addServer().host()
-        //        .port(Integer.parseInt));
         cacheManager = new RemoteCacheManager(cfg.build());
         cache = cacheManager.getCache("default");
-        //cache = cacheManager.getCache();
 
         System.out.println("Loaded Cache " + cache);
     }
@@ -57,14 +45,12 @@ public class TestServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse res) {
-        // Here the request is put in asynchronous mode
         res.setContentType("text/html");
 
         String name = req.getParameter("name");
         String surname = req.getParameter("surname");
         String teamName = req.getParameter("teamname");
 
-        // Actual logic goes here.
         PrintWriter out = null;
         try {
             out = res.getWriter();
@@ -75,8 +61,6 @@ public class TestServlet extends HttpServlet {
             player.setTeamName(teamName);
             String randomId = UUID.randomUUID().toString();
                         out.println("Added Player"); 
-            //cache.put(randomId.getBytes(), player);
-            //cache.put("my-id".getBytes(), "myvalue");
 
             out.println("Added Player ID[" + randomId + "]: " + cache.get(randomId));
 
@@ -85,7 +69,6 @@ public class TestServlet extends HttpServlet {
             }
              
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 

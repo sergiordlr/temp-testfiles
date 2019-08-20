@@ -28,11 +28,18 @@ class ClientConfiguration {
    private ClientConfiguration() {
    }
 
-   static ConfigurationBuilder create(String svcName, String port, String saslName, String user, String password) {
+   static ConfigurationBuilder create() {
 
-      String TRUSTSTORE_PATH = System.getenv("TRUSTSTORE_PATH");
+      String TRUSTSTORE_PATH     = System.getenv("TRUSTSTORE_PATH");
       String TRUSTSTORE_PASSWORD = System.getenv("TRUSTSTORE_PASSWORD");
       String use_kube_truststore = System.getenv("USE_KUBE_TRUSTSTORE");
+
+      String svcName  =  System.getenv("HOTROD_SERVICE");
+      String port     =  System.getenv("HOTROD_SERVICE_PORT");
+      String saslName =  System.getenv("APP_NAME");
+
+      String user     = System.getenv("HOTROD_USER");
+      String password = System.getenv("HOTROD_PASSWORD");
 
       if ( use_kube_truststore != null && use_kube_truststore.toLowerCase().equals("true") ) {
           createTruststoreFromCrtFile(CRT_PATH, KUBE_TRUSTSTORE_PATH, KUBE_TRUSTSTORE_PASSWORD);
