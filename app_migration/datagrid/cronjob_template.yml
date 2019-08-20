@@ -9,7 +9,7 @@ objects:
 - apiVersion: batch/v1beta1
   kind: CronJob
   metadata:
-    name: ${APP_NAME}
+    name: ${CRON_NAME}
   spec:
     schedule: "*/1 * * * *"
     jobTemplate:
@@ -17,7 +17,7 @@ objects:
         template:
           spec:
             containers:
-            - name: ${APP_NAME}
+            - name: ${CRON_NAME}
               env:
               - name: CURRENT_NAMESPACE
                 valueFrom:
@@ -33,7 +33,7 @@ objects:
 parameters:
 - description: Name of the cronjob deployed
   displayName: Name
-  name: APP_NAME
+  name: CRON_NAME
   required: true
   value: "insert"
 - description: Datagrid service that exposes the datagrid rest api.
