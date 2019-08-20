@@ -35,7 +35,7 @@ class ClientConfiguration {
       String use_kube_truststore = System.getenv("USE_KUBE_TRUSTSTORE");
 
       if ( use_kube_truststore != null && use_kube_truststore.toLowerCase().equals("true") ) {
-          createTruststoreFromCrtFile(CRT_PATH, TRUSTSTORE_PATH, TRUSTSTORE_PASSWORD);
+          createTruststoreFromCrtFile(CRT_PATH, KUBE_TRUSTSTORE_PATH, KUBE_TRUSTSTORE_PASSWORD);
           TRUSTSTORE_PATH = KUBE_TRUSTSTORE_PATH;
           TRUSTSTORE_PASSWORD = KUBE_TRUSTSTORE_PASSWORD;
       } 
