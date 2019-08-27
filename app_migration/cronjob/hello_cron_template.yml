@@ -26,7 +26,7 @@ objects:
               args:
               - /bin/sh
               - -c
-              -  echo "Hello! from $CURRENT_NAMESPACE"
+              -  echo "Hello! from namespace $CURRENT_NAMESPACE while using image ${IMAGE}"
             restartPolicy: OnFailure
 
 parameters:
