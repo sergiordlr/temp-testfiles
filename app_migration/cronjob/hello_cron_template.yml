@@ -12,8 +12,14 @@ objects:
   spec:
     schedule: "*/1 * * * *"
     jobTemplate:
+      metadata:
+        labels: 
+           cronowner: ${CRON_NAME}
       spec:
         template:
+          metadata:
+            labels: 
+               cronowner: ${CRON_NAME}
           spec:
             containers:
             - name: ${CRON_NAME}
