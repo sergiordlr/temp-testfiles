@@ -1,0 +1,35 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+labels:
+  template: wait-job
+message: |-
+  Creates a job that says hello and wait for a given amount of time
+objects:
+- apiVersion: batch/v1
+  kind: Job
+  metadata:
+    name: ${JOB_NAME}
+  spec:
+    template:
+      spec:
+        containers:
+        - name: pi
+          image: ${IMAGE}
+          command: ["sh",  "-c", "echo ${IMAGE}' Sleeping for '${SLEEP_TIME}'\n'; sleep ${SLEEP_TIME}; echo '\nDone!'"]
+        restartPolicy: Never
+parameters:
+- description: Name of the job deployed.
+  displayName: Name
+  name: JOB_NAME
+  required: true
+  value: "wait-job"
+- description: Time that will be sleeping the job.
+  displayName: Sleep time
+  name: SLEEP_TIME
+  required: true
+  value: "10"
+- description: Docker Image used 
+  displayName: Doker Image
+  name: IMAGE
+  required: true
+  value: "alpine"
