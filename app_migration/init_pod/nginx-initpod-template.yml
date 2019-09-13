@@ -1,0 +1,87 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+labels:
+  template: nginx-init-provisioner
+message: |-
+  Creates a simple nginx app with an init container that creates a Hello-World index
+
+objects:
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: ${NAME}-deployment
+    labels:
+      app: ${NAME}
+  spec:
+    replicas: ${REPLICAS}
+    selector:
+      matchLabels:
+        app: ${NAME}
+    template:
+      metadata:
+        labels:
+          app: ${NAME}
+      spec:
+        volumes:
+        - name: html-volume
+          emptyDir: {}
+        containers:
+        - name: ${NAME}
+          image: docker.io/twalter/openshift-nginx
+          ports:
+          - containerPort: 8081
+          volumeMounts:
+            - mountPath: "/usr/share/nginx/html"
+              name: html-volume
+        initContainers:
+        - name: provision-pod
+          image: ${INIT_IMAGE}
+          command: ['/bin/sh']
+          args: ['-c', "echo '<h1>HELLO WORLD</h1>' > /usr/share/nginx/html/index.html"]
+          volumeMounts:
+            - mountPath: "/usr/share/nginx/html"
+              name: html-volume
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: ${NAME}
+    name: ${NAME}-service
+  spec:
+    ports:
+    - port: 8081
+      targetPort: 8081
+    selector:
+      app: ${NAME}
+    type: LoadBalancer
+
+- apiVersion: route.openshift.io/v1
+  kind: Route
+  metadata:
+    name: ${NAME}-route
+    labels:
+      app: ${NAME}
+      service: ${NAME}-service
+  spec:
+    to:
+      kind: Service
+      name: ${NAME}-service
+    port:
+      targetPort: 8081
+  
+parameters:
+- description: Docker image used by the init pod
+  displayName: Init-pod Image
+  name: INIT_IMAGE
+  required: true
+  value: "alpine"
+- description: Number of replicas created
+  displayName: Replicas
+  name: REPLICAS
+  required: true
+  value: "1"
+- description: Name used for the application.
+  displayName: Name
+  name: NAME
+  required: true
+  value: "nginx"
