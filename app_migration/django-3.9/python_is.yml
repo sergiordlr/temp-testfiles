@@ -1,9 +1,13 @@
-piVersion: image.openshift.io/v1
+apiVersion: image.openshift.io/v1
 kind: ImageStream
 metadata:
   annotations:
     openshift.io/display-name: Python
+    openshift.io/image.dockerRepositoryCheck: 2019-09-12T15:42:05Z
+  creationTimestamp: null
+  generation: 1
   name: python
+  selfLink: /apis/image.openshift.io/v1/namespaces/openshift/imagestreams/python
 spec:
   lookupPolicy:
     local: false
@@ -117,4 +121,173 @@ spec:
     name: latest
     referencePolicy:
       type: Source
+status:
+  dockerImageRepository: docker-registry.default.svc:5000/python
+[sregidor@sregidor cpma]$ oc get is -n openshift python  -o yaml > is_python.yml
+[sregidor@sregidor cpma]$ cat is_python.yml 
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  annotations:
+    openshift.io/display-name: Python
+    openshift.io/image.dockerRepositoryCheck: 2019-09-12T15:42:05Z
+  creationTimestamp: 2019-09-12T15:42:01Z
+  generation: 2
+  name: python
+  namespace: openshift
+  resourceVersion: "1166"
+  selfLink: /apis/image.openshift.io/v1/namespaces/openshift/imagestreams/python
+  uid: dca7e282-d573-11e9-9b68-0050568b59ce
+spec:
+  lookupPolicy:
+    local: false
+  tags:
+  - annotations:
+      description: Build and run Python 2.7 applications on RHEL 7. For more information
+        about using this builder image, including OpenShift considerations, see https://github.com/sclorg/s2i-python-container/blob/master/2.7/README.md.
+      iconClass: icon-python
+      openshift.io/display-name: Python 2.7
+      openshift.io/provider-display-name: Red Hat, Inc.
+      sampleRepo: https://github.com/openshift/django-ex.git
+      supports: python:2.7,python
+      tags: builder,python
+      version: "2.7"
+    from:
+      kind: DockerImage
+      name: registry.access.redhat.com/rhscl/python-27-rhel7:latest
+    generation: 2
+    importPolicy: {}
+    name: "2.7"
+    referencePolicy:
+      type: Source
+  - annotations:
+      description: Build and run Python 3.3 applications on RHEL 7. For more information
+        about using this builder image, including OpenShift considerations, see https://github.com/sclorg/s2i-python-container/blob/master/3.3/README.md.
+      iconClass: icon-python
+      openshift.io/display-name: Python 3.3
+      openshift.io/provider-display-name: Red Hat, Inc.
+      sampleRepo: https://github.com/openshift/django-ex.git
+      supports: python:3.3,python
+      tags: hidden,builder,python
+      version: "3.3"
+    from:
+      kind: DockerImage
+      name: registry.access.redhat.com/openshift3/python-33-rhel7:latest
+    generation: 2
+    importPolicy: {}
+    name: "3.3"
+    referencePolicy:
+      type: Source
+  - annotations:
+      description: Build and run Python 3.4 applications on RHEL 7. For more information
+        about using this builder image, including OpenShift considerations, see https://github.com/sclorg/s2i-python-container/blob/master/3.4/README.md.
+      iconClass: icon-python
+      openshift.io/display-name: Python 3.4
+      openshift.io/provider-display-name: Red Hat, Inc.
+      sampleRepo: https://github.com/openshift/django-ex.git
+      supports: python:3.4,python
+      tags: builder,python
+      version: "3.4"
+    from:
+      kind: DockerImage
+      name: registry.access.redhat.com/rhscl/python-34-rhel7:latest
+    generation: 2
+    importPolicy: {}
+    name: "3.4"
+    referencePolicy:
+      type: Source
+  - annotations:
+      description: Build and run Python 3.5 applications on RHEL 7. For more information
+        about using this builder image, including OpenShift considerations, see https://github.com/sclorg/s2i-python-container/blob/master/3.5/README.md.
+      iconClass: icon-python
+      openshift.io/display-name: Python 3.5
+      openshift.io/provider-display-name: Red Hat, Inc.
+      sampleRepo: https://github.com/openshift/django-ex.git
+      supports: python:3.5,python
+      tags: builder,python
+      version: "3.5"
+    from:
+      kind: DockerImage
+      name: registry.access.redhat.com/rhscl/python-35-rhel7:latest
+    generation: 2
+    importPolicy: {}
+    name: "3.5"
+    referencePolicy:
+      type: Source
+  - annotations:
+      description: Build and run Python 3.6 applications on RHEL 7. For more information
+        about using this builder image, including OpenShift considerations, see https://github.com/sclorg/s2i-python-container/blob/master/3.6/README.md.
+      iconClass: icon-python
+      openshift.io/display-name: Python 3.6
+      openshift.io/provider-display-name: Red Hat, Inc.
+      sampleRepo: https://github.com/openshift/django-ex.git
+      supports: python:3.6,python
+      tags: builder,python
+      version: "3.6"
+    from:
+      kind: DockerImage
+      name: registry.access.redhat.com/rhscl/python-36-rhel7:latest
+    generation: 2
+    importPolicy: {}
+    name: "3.6"
+    referencePolicy:
+      type: Source
+  - annotations:
+      description: |-
+        Build and run Python applications on RHEL 7. For more information about using this builder image, including OpenShift considerations, see https://github.com/sclorg/s2i-python-container/blob/master/3.6/README.md.
+
+        WARNING: By selecting this tag, your application will automatically update to use the latest version of Python available on OpenShift, including major versions updates.
+      iconClass: icon-python
+      openshift.io/display-name: Python (Latest)
+      openshift.io/provider-display-name: Red Hat, Inc.
+      sampleRepo: https://github.com/openshift/django-ex.git
+      supports: python
+      tags: builder,python
+    from:
+      kind: ImageStreamTag
+      name: "3.6"
+    generation: 1
+    importPolicy: {}
+    name: latest
+    referencePolicy:
+      type: Source
+status:
+  dockerImageRepository: docker-registry.default.svc:5000/openshift/python
+  tags:
+  - items:
+    - created: 2019-09-12T15:42:05Z
+      dockerImageReference: registry.access.redhat.com/rhscl/python-27-rhel7@sha256:353e6eb6a9653d984e58e4771c34a03f11ba2e1b31a3864b46f1423f3cc08027
+      generation: 2
+      image: sha256:353e6eb6a9653d984e58e4771c34a03f11ba2e1b31a3864b46f1423f3cc08027
+    tag: "2.7"
+  - items:
+    - created: 2019-09-12T15:42:05Z
+      dockerImageReference: registry.access.redhat.com/openshift3/python-33-rhel7@sha256:10f52e526d723e970e06334b0590753747f222437af3e7f6fa1311a71088573e
+      generation: 2
+      image: sha256:10f52e526d723e970e06334b0590753747f222437af3e7f6fa1311a71088573e
+    tag: "3.3"
+  - items:
+    - created: 2019-09-12T15:42:05Z
+      dockerImageReference: registry.access.redhat.com/rhscl/python-34-rhel7@sha256:4447f8df60d9ce6622b97a3cd0fd529780e9abbbc5ac90525785252c6adfd5d6
+      generation: 2
+      image: sha256:4447f8df60d9ce6622b97a3cd0fd529780e9abbbc5ac90525785252c6adfd5d6
+    tag: "3.4"
+  - items:
+    - created: 2019-09-12T15:42:05Z
+      dockerImageReference: registry.access.redhat.com/rhscl/python-35-rhel7@sha256:26aa80a9db33f08b67ef8f37ea0593bac3800ccbedd2d62eabfd38b2501c8762
+      generation: 2
+      image: sha256:26aa80a9db33f08b67ef8f37ea0593bac3800ccbedd2d62eabfd38b2501c8762
+    tag: "3.5"
+  - items:
+    - created: 2019-09-12T15:42:05Z
+      dockerImageReference: registry.access.redhat.com/rhscl/python-36-rhel7@sha256:18d9d020626b44ac3687ebda3919633c76527c896162f1c88f73f64c8d17b4a9
+      generation: 2
+      image: sha256:18d9d020626b44ac3687ebda3919633c76527c896162f1c88f73f64c8d17b4a9
+    tag: "3.6"
+  - items:
+    - created: 2019-09-12T15:42:05Z
+      dockerImageReference: registry.access.redhat.com/rhscl/python-36-rhel7@sha256:18d9d020626b44ac3687ebda3919633c76527c896162f1c88f73f64c8d17b4a9
+      generation: 2
+      image: sha256:18d9d020626b44ac3687ebda3919633c76527c896162f1c88f73f64c8d17b4a9
+    tag: latest
 
