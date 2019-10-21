@@ -1,4 +1,4 @@
-Mirrors downstream images to local ocp3 cluster repository. If operator.yml and controller-2.yml files are provided, they are installed too.
+Mirrors downstream images to local ocp3 cluster docker registry. If operator.yml and controller-3.yml files are provided, they are installed too.
 
 1. Log in to ocp3 with admin user or 'export KUBECONFIG=.../admin.kubeconfig.file'
 2. If you want to install non-olm operator and controller, copy operator.yml and contrller-3.yml files to the current directory.
