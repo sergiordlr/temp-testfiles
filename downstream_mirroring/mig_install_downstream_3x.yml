@@ -88,24 +88,24 @@
       name: "mig-registry"
     register: account_info
    
-  - name: Debug secret
+  - name: Debug account
     debug: msg={{ account_info }}
 
-  - name: Get the token secret
+  - name: Get the name of the account token secret
     set_fact:
       token_secret: "{{ account_info.resources[0].secrets | selectattr('name', 'search', 'token') | map(attribute='name')| join  }}"
 
-  - name: Get account secret   
+  - name: Get the information of the secret
     k8s_facts:
       kind: Secret
       namespace: "default"
       name: "{{ token_secret }}"
     register: secret_info
  
-  - name: Debug secret
+  - name: Debug secret information
     debug: msg={{ secret_info }}
 
-  - name: Get the token secret
+  - name: Extract the account token from secret
     set_fact:
       acc_token: "{{ secret_info.resources[0].data.token | b64decode }}"
 
@@ -128,17 +128,11 @@
       set_fact:
         docker_conf: "{{ file_content.stdout | from_yaml }}"
   
-    - name: Make sure that insecure_registries is a list
-      when: ' is string'
-      set_fact:
-        insecure_registries_list: [ "{{ insecure_registries }}" ]
-  
     - name: Set default values if there are no registries defined
       set_fact:
         docker_conf_insecure_registries: "{{ [] if docker_conf['insecure_registries'] is not defined else docker_conf['insecure_registries'] }}"
   
     - name: Add insecure registries (if insecure_registries had to be converted)
-      when: 'insecure_registries_merge_result|skipped'
       set_fact:
         docker_conf: "{{ docker_conf | combine({'insecure_registries': (docker_conf_insecure_registries + [ docker_registry ] ) | unique }, recursive=True) }}"
   
@@ -248,8 +242,6 @@
       kind: Pod
       namespace: openshift-migration
       label_selectors: "app=migration-operator"
-    #  field_selectors:
-    #    - status.phase = running
     # Untill all init containers are ready
     register: pod
     until: pod | json_query('resources[*].status.containerStatuses[*].ready') | flatten |difference( [true] ) | length  == 0
