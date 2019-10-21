@@ -1,0 +1,278 @@
+- hosts: localhost
+  vars:
+    downstream_registry: "registry-proxy.engineering.redhat.com"
+    downstream_org: "rh-osbs"
+    downstream_repo_prefix: "rhcam-"
+    target_namespace: "rhcam"
+    images:
+      - src_name: "openshift-migration-controller"
+        src_tag:   "v1.0"
+        tgt_name: "openshift-migration-controller-rhel8"
+        tgt_tag:   "v1.0"
+
+      - src_name: "openshift-migration-operator"
+        src_tag:   "v1.0"
+        tgt_name: "openshift-migration-rhel7-operator"
+        tgt_tag:   "v1.0"
+
+      - src_name: "openshift-migration-plugin"
+        src_tag:   "v1.0"
+        tgt_name: "openshift-migration-plugin-rhel8"
+        tgt_tag:   "v1.0"
+
+      - src_name: "openshift-migration-ui"
+        src_tag:   "v1.0"
+        tgt_name: "openshift-migration-ui-rhel8"
+        tgt_tag:   "v1.0"
+
+      - src_name: "openshift-migration-velero"
+        src_tag:   "v1.0"
+        tgt_name: "openshift-migration-velero-rhel8"
+        tgt_tag:   "v1.0"
+
+      - src_name: "openshift-migration-velero-restic-restore-helper"
+        src_tag:   "v1.0"
+        tgt_name: "openshift-migration-velero-restic-restore-helper-rhel8"
+        tgt_tag:   "v1.0"
+
+      - src_name: "openshift-migration-cpma"
+        src_tag:   "v1.0"
+        tgt_name: "openshift-migration-cpma-rhel8"
+        tgt_tag:   "v1.0"
+
+  tasks:
+  - name: Obtain  internal route
+    k8s_facts:
+      #kubeconfig: "{{ src_kubeconfig }}"
+      kind: Route
+      namespace: "default"
+      name: "docker-registry"
+    register: docker_route
+
+  - name: Extract doker registry
+    set_fact:
+      docker_registry: "{{ docker_route.resources[0].spec.host }}"
+
+  - name: Create Service Account
+    k8s:
+      state: present
+      definition:
+        apiVersion: v1
+        kind: ServiceAccount
+        metadata:
+          name: mig-registry
+          namespace: default
+
+  - name: Authorize the Account
+    k8s:
+      state: present
+      definition:
+        apiVersion: rbac.authorization.k8s.io/v1
+        kind: ClusterRoleBinding
+        metadata:
+          name: mig-registry-admin
+        roleRef:
+          apiGroup: rbac.authorization.k8s.io
+          kind: ClusterRole
+          name: admin
+        subjects:
+        - kind: ServiceAccount
+          name: mig-registry
+          namespace: default
+
+  - name: Get account info
+    k8s_facts:
+      #kubeconfig: "{{ src_kubeconfig }}"
+      kind: ServiceAccount
+      namespace: "default"
+      name: "mig-registry"
+    register: account_info
+   
+  - name: Debug secret
+    debug: msg={{ account_info }}
+
+  - name: Get the token secret
+    set_fact:
+      token_secret: "{{ account_info.resources[0].secrets | selectattr('name', 'search', 'token') | map(attribute='name')| join  }}"
+
+  - name: Get account secret   
+    k8s_facts:
+      kind: Secret
+      namespace: "default"
+      name: "{{ token_secret }}"
+    register: secret_info
+ 
+  - name: Debug secret
+    debug: msg={{ secret_info }}
+
+  - name: Get the token secret
+    set_fact:
+      acc_token: "{{ secret_info.resources[0].data.token | b64decode }}"
+
+  - name: Token secret
+    debug: msg={{ acc_token }}
+
+  - name: Add the registry as an insecure registry
+    block:
+    - name: Try  registry yaml file configuration
+      debug: msg="Try to configure the registry as a yaml file"
+    # If the configuratoin file is a yaml file
+    - name: Load configuration file
+      shell: cat /etc/containers/registries.conf
+      register: file_content
+  
+    - name: Content
+      debug: msg={{ file_content }}
+  
+    - name: Store file content into a variable
+      set_fact:
+        docker_conf: "{{ file_content.stdout | from_yaml }}"
+  
+    - name: Make sure that insecure_registries is a list
+      when: ' is string'
+      set_fact:
+        insecure_registries_list: [ "{{ insecure_registries }}" ]
+  
+    - name: Set default values if there are no registries defined
+      set_fact:
+        docker_conf_insecure_registries: "{{ [] if docker_conf['insecure_registries'] is not defined else docker_conf['insecure_registries'] }}"
+  
+    - name: Add insecure registries (if insecure_registries had to be converted)
+      when: 'insecure_registries_merge_result|skipped'
+      set_fact:
+        docker_conf: "{{ docker_conf | combine({'insecure_registries': (docker_conf_insecure_registries + [ docker_registry ] ) | unique }, recursive=True) }}"
+  
+    - name: Load variable back to file
+      copy:
+        content: "{{ docker_conf | to_yaml }}"
+        dest: /etc/containers/registries.conf
+
+
+    rescue:
+      - name: Registry conf file is not a yaml file. Try configuration as an ini config file.
+        debug: msg="Configure registry as ini config file"
+      # If the configuration file is an ini file
+      - name: Get insecure registries
+        set_fact:
+          insecure_registries: "{{ (lookup('ini', 'registries section=registries.insecure  file=/etc/containers/registries.conf') | from_yaml  + [ docker_registry ]) | unique }}"
+
+      - name: Ensure the repository is added to insecure registries
+        ini_file:
+          path: /etc/containers/registries.conf
+          section: registries.insecure
+          option: registries
+          value: "{{ insecure_registries | to_json }}"
+          backup: yes
+        become: yes
+
+
+#  - name: Restart registries service
+#    service:
+#      name: registries
+#      state: restarted
+
+  - name: Restart docker
+    service:
+      name: docker
+      state: restarted
+    become: yes
+
+  - name: Create target namespace
+    k8s:
+      state: present
+      definition:
+        apiVersion: v1
+        kind: Namespace
+        metadata:
+          name: "{{ target_namespace }}"
+    
+  - name: Create openshift-migration namespace
+    k8s:
+      state: present
+      definition:
+        apiVersion: v1
+        kind: Namespace
+        metadata:
+          name: openshift-migration
+
+  - name: Give pull permissions to openshift-migration
+    k8s:
+      state: present
+      definition:
+        apiVersion: authorization.openshift.io/v1
+        kind: RoleBinding
+        metadata:
+          name: system:image-puller
+          namespace: "{{ target_namespace }}"
+        roleRef:
+          name: system:image-puller
+        subjects:
+        - kind: SystemGroup
+          name: system:serviceaccounts:openshift-migration
+        groupNames:
+        - system:serviceaccounts:openshift-migration
+        userNames: null
+
+  - name: Docker login
+    shell: "docker login {{ docker_registry }} -u mig-registry -p {{ acc_token }}"
+    retries: 2
+    register: login_output
+
+  - name: Docker pull images
+    shell: "docker pull {{ downstream_registry }}/{{ downstream_org }}/{{ downstream_repo_prefix }}{{ item.src_name }}:{{ item.src_tag }}"
+    retries: 3
+    with_items: "{{ images }}"
+
+  - name: Docker tag images
+    shell: "docker tag {{ downstream_registry }}/{{ downstream_org }}/{{ downstream_repo_prefix }}{{ item.src_name }}:{{ item.src_tag }} {{ docker_registry }}/{{ target_namespace }}/{{ item.tgt_name }}:{{ item.tgt_tag }}"
+    with_items: "{{ images }}"
+
+  - name: Docker push images
+    shell: "docker push {{ docker_registry }}/{{ target_namespace }}/{{ item.tgt_name }}:{{ item.tgt_tag }}"
+    retries: 3
+    with_items: "{{ images }}"
+
+  - stat:
+      path: operator.yml
+    register: operator_file
+
+  - name: Create the operator
+    k8s:
+      state: present
+      definition: "{{ item }}"
+    when: operator_file.stat.exists
+    loop: "{{ lookup('file', 'operator.yml') | replace('image-registry.openshift-image-registry.svc', 'docker-registry.default.svc') | from_yaml_all | list}}"
+    
+  - name: Check operator status
+    k8s_facts:
+      kind: Pod
+      namespace: openshift-migration
+      label_selectors: "app=migration-operator"
+    #  field_selectors:
+    #    - status.phase = running
+    # Untill all init containers are ready
+    register: pod
+    until: pod | json_query('resources[*].status.containerStatuses[*].ready') | flatten |difference( [true] ) | length  == 0
+    retries: 30
+    when: operator_file.stat.exists
+
+  - stat:
+      path: controller-3.yml
+    register: controller_file
+
+  - name: Create the controller
+    k8s:
+      state: present
+      definition: "{{ lookup('file', 'controller-3.yml') | replace('image-registry.openshift-image-registry.svc', 'docker-registry.default.svc') | from_yaml }}"
+    when: controller_file.stat.exists
+    
+  - name: Check controller status
+    k8s_facts:
+      kind: Pod
+      namespace: openshift-migration
+    # Untill all init containers in all pods are ready.
+    register: pods
+    until: (pods.resources | length > 1 ) and (pods | json_query('resources[*].status.containerStatuses[*].ready') | flatten |difference( [true] ) | length  == 0)
+    retries: 30
+    when: controller_file.stat.exists
+
