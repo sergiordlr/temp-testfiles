@@ -234,8 +234,8 @@
     k8s:
       state: present
       definition: "{{ item }}"
+    loop: "{{ lookup('file', 'operator.yml', errors='ignore') | replace('image-registry.openshift-image-registry.svc', 'docker-registry.default.svc') | from_yaml_all | list}}"
     when: operator_file.stat.exists
-    loop: "{{ lookup('file', 'operator.yml') | replace('image-registry.openshift-image-registry.svc', 'docker-registry.default.svc') | from_yaml_all | list}}"
     
   - name: Check operator status
     k8s_facts:
