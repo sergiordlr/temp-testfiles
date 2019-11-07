@@ -3,6 +3,10 @@ Mirrors downstream images to local ocp3 cluster docker registry. If operator.yml
 1. Log in to ocp3 with admin user or 'export KUBECONFIG=.../admin.kubeconfig.file'
 2. If you want to install non-olm operator and controller, copy operator.yml and contrller-3.yml files to the current directory.
     https://github.com/fusor/mig-operator/tree/master/deploy/test-helpers/non-olm/v1.0.0
+
+    wget -O operator.yml https://github.com/fusor/mig-operator/blob/master/deploy/test-helpers/non-olm/v1.0.0/operator.yml?raw=true
+    wget -O controller-3.yml https://github.com/fusor/mig-operator/blob/master/deploy/test-helpers/non-olm/v1.0.0/controller-3.yml?raw=true
+
 3. Run this command:
 
     ansible-playbook mig_install_downstream_3x.yml -K
