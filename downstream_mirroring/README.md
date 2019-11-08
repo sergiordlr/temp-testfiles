@@ -11,7 +11,7 @@ The playbook will get the operator.yml and controller-3.yml files from the opera
     podman cp $(podman create $MIRRORED_OPERATOR_IMAGE ):/operator.yml ./
     podman cp $(podman create $MIRRORED_OPERATOR_IMAGE ):/controller-3.yml ./
 
-The operator image wil always be deleted before getting the controller and the pod. -e foce_podan=false parameter will avoid this behavior.
+The operator image will always be deleted before getting the controller and the operator files. -e foce_podan=false parameter will avoid this behavior.
 
 If the operator.yml and the controller-3.yml files exist and force_podman=false, it will use the those files instead of downloading them from the operator image.
 
