@@ -18,6 +18,6 @@ If the operator.yml and the controller-3.yml files exist and force_podman=false,
 
 You can mirror the stage images by using the stage variables
 
-    ansible-playbook mig_install_downstream_3x.yml -K -e @stage_vars.yml
+    ansible-playbook mig_install_downstream_3x.yml -e @stage_vars.yml
 
 This automation is only valid for 3.x ocp. For 4.x ocp use the mig-operator instructions in https://github.com/fusor/mig-operator/tree/master/deploy/test-helpers
