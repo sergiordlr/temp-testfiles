@@ -8,8 +8,8 @@ Mirrors downstream images to local ocp3 cluster docker registry. If operator.yml
 
 The playbook will get the operator.yml and controller-3.yml files from the operator image with this command
 
-  podman cp $(podman create $MIRRORED_OPERATOR_IMAGE ):/operator.yml ./
-  podman cp $(podman create $MIRRORED_OPERATOR_IMAGE ):/controller-3.yml ./
+    podman cp $(podman create $MIRRORED_OPERATOR_IMAGE ):/operator.yml ./
+    podman cp $(podman create $MIRRORED_OPERATOR_IMAGE ):/controller-3.yml ./
 
 The operator image wil always be deleted before getting the controller and the pod. -e foce_podan=false parameter will avoid this behavior.
 
