@@ -1,5 +1,6 @@
 - hosts: localhost
   vars:
+    force_podman: true
     downstream_registry: "registry-proxy.engineering.redhat.com"
     downstream_org: "rh-osbs"
     downstream_repo_prefix: "rhcam-"
@@ -41,6 +42,42 @@
         tgt_tag:   "v1.0"
 
   tasks:
+  - name: Get operator image
+    set_fact:
+      operator_image: "{{ (images | selectattr( 'src_name', 'search', 'operator'))|list | first }}"
+
+  - debug: 
+      msg: "Operatos image {{operator_image}} "
+
+  - name: Remove file (delete file)
+    file:
+      path: "{{playbook_dir}}/{{item}}"
+      state: absent
+    when: force_podman|bool
+    loop:
+      - controller-3.yml
+      - operator.yml
+
+  - stat:
+      path: "{{playbook_dir}}/operator.yml"
+    register: operator_file
+
+  - stat:
+      path: "{{playbook_dir}}/controller-3.yml"
+    register: controller_file
+
+  - name: Remove old operators image and containers
+    shell: "podman rmi --force {{downstream_registry}}/{{downstream_org}}/{{operator_image.src_name}}:{{operator_image.src_tag}}"
+    when: not controller_file.stat.exists or not operator_file.stat.exists or (force_podman|bool)
+
+  - name: Retrieve operator yaml file
+    shell: "podman cp $(podman create {{downstream_registry}}/{{downstream_org}}/{{operator_image.src_name}}:{{operator_image.src_tag}} ):/operator.yml {{playbook_dir}}/operator.yml"
+    when: not operator_file.stat.exists or force_podman|bool
+
+  - name: Retrieve controller-3 yaml file
+    shell: "podman cp $(podman create {{downstream_registry}}/{{downstream_org}}/{{operator_image.src_name}}:{{operator_image.src_tag}} ):/controller-3.yml {{playbook_dir}}/controller-3.yml"
+    when: not controller_file.stat.exists or force_podman|bool
+
   - name: Obtain  internal route
     k8s_facts:
       #kubeconfig: "{{ src_kubeconfig }}"
@@ -227,15 +264,14 @@
     with_items: "{{ images }}"
 
   - stat:
-      path: operator.yml
+      path: "{{playbook_dir}}/operator.yml"
     register: operator_file
 
   - name: Create the operator
     k8s:
       state: present
       definition: "{{ item }}"
-    loop: "{{ lookup('file', 'operator.yml', errors='ignore') | replace('image-registry.openshift-image-registry.svc', 'docker-registry.default.svc') | from_yaml_all | list}}"
-    when: operator_file.stat.exists
+    loop: "{{ lookup('file', 'operator.yml', errors='ignore') | replace('registry.redhat.io', 'docker-registry.default.svc:5000') | from_yaml_all | list}}"
     
   - name: Check operator status
     k8s_facts:
@@ -246,17 +282,15 @@
     register: pod
     until: pod | json_query('resources[*].status.containerStatuses[*].ready') | flatten |difference( [true] ) | length  == 0
     retries: 30
-    when: operator_file.stat.exists
 
   - stat:
-      path: controller-3.yml
+      path: "{{playbook_dir}}/controller-3.yml"
     register: controller_file
 
   - name: Create the controller
     k8s:
       state: present
-      definition: "{{ lookup('file', 'controller-3.yml') | replace('image-registry.openshift-image-registry.svc', 'docker-registry.default.svc') | from_yaml }}"
-    when: controller_file.stat.exists
+      definition: "{{ lookup('file', playbook_dir + '/controller-3.yml') | replace('image-registry.openshift-image-registry.svc', 'docker-registry.default.svc') | from_yaml }}"
     
   - name: Check controller status
     k8s_facts:
@@ -266,5 +300,4 @@
     register: pods
     until: (pods.resources | length > 1 ) and (pods | json_query('resources[*].status.containerStatuses[*].ready') | flatten |difference( [true] ) | length  == 0)
     retries: 30
-    when: controller_file.stat.exists
 
