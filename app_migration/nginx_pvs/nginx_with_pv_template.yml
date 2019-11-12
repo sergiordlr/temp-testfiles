@@ -17,7 +17,7 @@
 apiVersion: template.openshift.io/v1
 kind: Template
 labels:
-  template: mysql-persistent-template
+  template: nginx-persistent-template
 message: |-
   Creates a simple nginx app with two pv
 
