@@ -12,7 +12,7 @@ objects:
     labels:
     name: ${NAME}-deployment
   spec:
-    replicas: {{ replicas }}
+    replicas: ${REPLICAS}
     template:
       metadata:
         labels:
