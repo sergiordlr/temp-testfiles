@@ -1,7 +1,7 @@
 downstream_registry: "registry.stage.redhat.io"
 downstream_org: "rhcam-1-0"
 downstream_repo_prefix: ""
-target_namespace: "rhcam"
+target_namespace: "rhcam-1-0"
 images:
   - src_name: "openshift-migration-controller-rhel8"
     src_tag:   "v1.0"
