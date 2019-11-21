@@ -72,11 +72,11 @@
     ignore_errors: True
 
   - name: Retrieve operator yaml file
-    shell: "podman cp $(podman create {{downstream_registry}}/{{downstream_org}}/{{operator_image.src_name}}:{{operator_image.src_tag}} ):/operator.yml {{playbook_dir}}/operator.yml"
+    shell: "podman cp $(podman create {{downstream_registry}}/{{downstream_org}}/{{ downstream_repo_prefix }}{{operator_image.src_name}}:{{operator_image.src_tag}} ):/operator.yml {{playbook_dir}}/operator.yml"
     when: not operator_file.stat.exists or force_podman|bool
 
   - name: Retrieve controller-3 yaml file
-    shell: "podman cp $(podman create {{downstream_registry}}/{{downstream_org}}/{{operator_image.src_name}}:{{operator_image.src_tag}} ):/controller-3.yml {{playbook_dir}}/controller-3.yml"
+    shell: "podman cp $(podman create {{downstream_registry}}/{{downstream_org}}/{{ downstream_repo_prefix }}{{operator_image.src_name}}:{{operator_image.src_tag}} ):/controller-3.yml {{playbook_dir}}/controller-3.yml"
     when: not controller_file.stat.exists or force_podman|bool
 
   - name: Obtain  internal route
