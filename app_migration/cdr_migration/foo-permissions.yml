@@ -1,0 +1,42 @@
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: foo-controller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: foo-controller
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: foo-controller
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  name: foo-controller
+rules:
+- apiGroups:
+  - samplecontroller.k8s.io
+  resources:
+  - deploycustoms
+  - deploycustoms/finalizers
+  verbs:
+  - "*"
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  verbs:
+  - "*"
+- apiGroups:
+  - ""
+  resources:
+  - events
+  - pods
+  verbs:
+  - "*"

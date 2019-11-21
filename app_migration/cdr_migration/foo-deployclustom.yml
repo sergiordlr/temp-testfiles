@@ -1,0 +1,9 @@
+apiVersion: samplecontroller.k8s.io/v1alpha1
+kind: DeployCustom
+metadata:
+  name: example-custom
+spec:
+  deploymentName: example-custom
+  replicas: 1
+  #image: docker.io/nginx:latest
+  image: quay.io/sregidor/openshift-nginx:latest

@@ -1,0 +1,29 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+labels:
+  template: foo-controller-template
+message: |-
+  Creates a simple foo-controller to handle foo custom resources.
+
+objects:
+- apiVersion: apps/v1beta1
+  kind: Deployment
+  metadata:
+    name: ${NAME}-deployment
+  spec:
+    replicas: 1
+    template:
+      metadata:
+        labels:
+          app: ${NAME}
+      spec:
+        containers:
+        - image: quay.io/sregidor/foo-controller
+          name: ${NAME}
+          #command: ["sh",  "-c", "pwd;whoami; ls -lart ; tail -f /dev/null"]
+parameters:
+- description: Name used for the application.
+  displayName: Name
+  name: NAME
+  required: true
+  value: "foo-controller"
