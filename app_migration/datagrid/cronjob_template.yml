@@ -10,11 +10,16 @@ objects:
   kind: CronJob
   metadata:
     name: ${CRON_NAME}
+    labels:
+      application: ${CRON_NAME}
   spec:
     schedule: "*/1 * * * *"
     jobTemplate:
       spec:
         template:
+          metadata:
+            labels:
+              application: ${CRON_NAME}
           spec:
             containers:
             - name: ${CRON_NAME}
