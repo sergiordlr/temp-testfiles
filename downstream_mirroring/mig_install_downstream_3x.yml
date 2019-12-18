@@ -66,6 +66,10 @@
       path: "{{playbook_dir}}/controller-3.yml"
     register: controller_file
 
+  - stat:
+      path: "/etc/docker/daemon.json"
+    register: insecure_regs_file
+
   - name: Remove old operators image and containers
     shell: "podman rmi --force {{downstream_registry}}/{{downstream_org}}/{{operator_image.src_name}}:{{operator_image.src_tag}}"
     when: not controller_file.stat.exists or not operator_file.stat.exists or (force_podman|bool)
@@ -215,7 +219,25 @@
           value: "{{ insecure_registries | to_json }}"
           backup: yes
         become: yes
+    when: not insecure_regs_file.stat.exists
 
+  - name: Add insecure registry to /etc/docker/daemon.json
+    block:
+    - name: Get current insecure registries
+      set_fact:
+        json_conf: "{{ lookup('file','/etc/docker/daemon.json') | from_json }}"
+    - name: Set default values if there are no registries defined
+      set_fact:
+        json_conf_insecure_registries: "{{ [] if json_conf['insecure-registries'] is not defined else json_conf['insecure-registries'] }}"
+    - name: Add insecure registries (if insecure_registries had to be converted)
+      set_fact:
+        json_conf: "{{ json_conf | combine({'insecure-registries': (json_conf_insecure_registries + [ docker_registry ] ) | unique }, recursive=True) }}"
+    - name: Load variable back to file
+      copy:
+        content: "{{ json_conf | to_json }}"
+        dest: /etc/docker/daemon.json
+      become: yes
+    when: insecure_regs_file.stat.exists
 
 #  - name: Restart registries service
 #    service:
