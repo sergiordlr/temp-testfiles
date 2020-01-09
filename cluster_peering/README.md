@@ -1,6 +1,6 @@
 Role that creates a peer connection between 2 PVCs
 
-Remember that agnosticd deploys 2 VPCs for 4.x clusters. Usually we want to peer the one with the name "cluster-{{guid}}-randomstring"
+Remember that agnosticd deploys 2 PVCs for 4.x clusters. Usually we want to peer the one with the name "cluster-{{guid}}-randomstring"
 
 
 How to:
