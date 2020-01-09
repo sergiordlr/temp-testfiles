@@ -71,7 +71,7 @@
     register: insecure_regs_file
 
   - name: Remove old operators image and containers
-    shell: "podman rmi --force {{downstream_registry}}/{{downstream_org}}/{{operator_image.src_name}}:{{operator_image.src_tag}}"
+    shell: "podman rmi --force {{downstream_registry}}/{{downstream_org}}/{{ downstream_repo_prefix }}{{operator_image.src_name}}:{{operator_image.src_tag}}"
     when: not controller_file.stat.exists or not operator_file.stat.exists or (force_podman|bool)
     ignore_errors: True
 
