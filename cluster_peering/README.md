@@ -10,5 +10,5 @@ ansible-playbook peer_clusters.yml  -e tgt_name=TARGETTAGNAMEFILTER -e src_name=
 
 for instance:
 
-ansible-playbook peer_clusters.yml  -e "tgt_name=cluster-myguid-*" -e "src_name=myotherguid*" -e region=us-east-1
+ansible-playbook peer_clusters.yml  -e "tgt_name=cluster-myguid-\*" -e "src_name=myotherguid\*" -e region=us-east-1
 
