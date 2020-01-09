@@ -1,0 +1,16 @@
+region: "us-east-2"
+
+
+# Source cluster name filter
+tgt_name: "cluster-myguid*"
+src_name: "mysourceguid*"
+
+# AWS filters to select the source and target VPCs. Add as many as you need to identify the VPCS. By default we only use the "Name" tag.
+tgt_filters:
+      "tag:Name": "{{ tgt_name }}"
+#      "tag:guid":  your_guid_tag_here
+#      "tag:whaterverta":  your_whatever_tag_here
+src_filters:
+      "tag:Name": "{{ src_name }}"
+#      "tag:guid":  your_guid_tag_here
+#      "tag:whaterverta":  your_whatever_tag_here

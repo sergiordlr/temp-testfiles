@@ -1,0 +1,67 @@
+- name: Get target vpc
+  ec2_vpc_net_info:
+    region: "{{ region }}"
+    filters: "{{ tgt_filters }}"
+  register: vpcs_tgt
+
+- name: Get source vpc
+  ec2_vpc_net_info:
+    region: "{{ region }}"
+    filters: "{{ src_filters }}"
+  register: vpcs_src
+
+- debug: msg={{vpcs_tgt}}
+- debug: msg={{vpcs_src}}
+
+- name: Create local account VPC peering Connection
+  ec2_vpc_peer:
+    region: "{{ region }}"
+    vpc_id: "{{ vpcs_tgt.vpcs[0].vpc_id }}"
+    peer_vpc_id: "{{ vpcs_src.vpcs[0].vpc_id }}"
+    state: present
+    tags:
+      Name: Move glusterfs volume peering
+      origvcp: "{{ tgt_name }}"
+      peervpc: "{{ src_name }}"
+  register: vpc_peer
+
+- debug: msg={{vpc_peer}}
+
+- name: Accept local VPC peering request
+  ec2_vpc_peer:
+    region: "{{ region }}"
+    peering_id: "{{ vpc_peer.peering_id }}"
+    state: accept
+  register: action_peer
+
+- name: Get route tables for vpc
+  ec2_vpc_route_table_info:
+    region: "{{ region }}"
+    filters:
+      vpc-id: "{{ vpcs_tgt.vpcs[0].vpc_id }}"
+  register: tgt_tables
+
+- debug: msg={{tgt_tables}}
+
+- name: Find main table
+  set_fact:
+     route_table: "{{ item }}"
+  when: (item.associations|length > 0 and (item.associations | selectattr('main','equalto', true) | list | length > 0)) or (tgt_tables.route_tables|length == 1)
+  loop: "{{ tgt_tables.route_tables }}"
+
+- debug: msg={{route_table}}
+- debug: msg={{ vpc_peer.peering_id }}
+- debug: msg={{ action_peer }}
+
+- name: Add new route to route table
+  ec2_vpc_route_table:
+    region: "{{ region }}"
+    route_table_id: "{{ route_table.id }}"
+    lookup: id
+    vpc_id: "{{ route_table.vpc_id }}"
+    routes: 
+    - dest: "{{ vpcs_src.vpcs[0].cidr_block }}"
+      vpc_peering_connection_id: "{{ vpc_peer.peering_id }}"
+  register: mod_route_table
+
+- debug: msg={{mod_route_table}}

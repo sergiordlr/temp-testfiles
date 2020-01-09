@@ -1,0 +1,4 @@
+- hosts: localhost
+  roles:
+    - role: peer_connections
+
