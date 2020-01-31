@@ -2,7 +2,7 @@
 apiVersion: template.openshift.io/v1
 kind: Template
 labels:
-  template: Nooba bucket
+  template: noobaa-bucket
 message: |-
   Creates a bucket in noobaa using a PVC as Backingstore
 objects:
