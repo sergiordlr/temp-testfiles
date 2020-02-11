@@ -83,7 +83,7 @@
       register: bucket
       until: (bucket.resources|first).status.phase == "Bound"
       retries: 60
-      delay: 10
+      delay: 20
 
 - name: workload tasks complete
   debug:
