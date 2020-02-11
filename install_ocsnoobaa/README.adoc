@@ -1,0 +1,3 @@
+Adapted workload role to install noobaa using ocs
+
+ansible-playbook install_noobaa.yml
