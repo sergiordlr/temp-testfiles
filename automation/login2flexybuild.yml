@@ -1,0 +1,87 @@
+- hosts: localhost
+  vars:
+    flexyjob_url: "https://openshift-qe-jenkins.rhev-ci-vms.eng.rdu2.redhat.com/job/Launch%20Environment%20Flexy/"
+    build_number:  "80351"
+#  roles:
+#  - role: nginx-pv
+#    namespace: "nginx-cloud2cloud"
+#    src_storage_class: "{{ platform_sc }}"
+#    dst_storage_class: "{{ platform_sc }}"
+#    pv: true
+
+
+  tasks:
+  - name: Extract credentials from flexy job build
+    block:
+    - debug: 
+        msg: "Trying to get the credentials from 4.x build"
+
+    - name: Get 4.x kubeconfig
+      uri:
+        url: " {{ flexyjob_url + build_number + '/artifact/workdir/install-dir/auth/kubeconfig/*view*/' }} "
+        return_content: yes
+      register: kubeconfig
+
+    - name: Get 4.x password
+      uri:
+        url: " {{ flexyjob_url + build_number + '/artifact/workdir/install-dir/auth/kubeadmin-password/*view*/' }} "
+        return_content: yes
+      register: admin_password
+
+    - name: Set URL and password
+      set_fact:
+         api_url: "{{ (kubeconfig.content | from_yaml).clusters[0].get('cluster').get('server') }}"
+         admin_pass: " {{ admin_password.content }} "
+
+
+    rescue:
+    - debug: 
+        msg: "Not a 4.x build. Trying to get credentials from 3.x build now."
+    - name: Get 3.x host spec
+      uri:
+        url: "{{ flexyjob_url + build_number + '/artifact/host.spec/*view*/' }}"
+        return_content: yes
+      register: this
+
+      
+    - debug: msg={{ this.content }}
+    - name: Extract 3.x master node name
+      set_fact:
+        master_node: "{{ this.content.split(':')[0] | trim }}" 
+
+    - set_fact:
+        all_hostnames: "{{ all_hostnames|default([]) + this.content.split(',')|map('regex_replace', ':.*$')|list }}"
+
+    - name: Add ocp3 nodes to inventory
+      add_host: 
+        ansible_connection: ssh
+        name: "{{ item }}" 
+        ansible_host: "{{ item }}"  
+        ansible_user: root
+        ansible_ssh_private_key_file: "~/.ssh/openshift-qe.pem"
+        ansible_ssh_extra_args: "-o StrictHostKeyChecking=no"
+        ansible_ssh_common_args: '-o userknownhostsfile=/dev/null'
+      loop: "{{ all_hostnames }}"
+
+    - name: Create kubeadmin user in ocp3
+      command: "oc adm policy add-cluster-role-to-user cluster-admin kubeadmin"
+      delegate_to: "{{ master_node }}" 
+
+    - name: Set URL and password
+      set_fact:
+         api_url: "https://{{ master_node }}:8443"
+         admin_pass: "1234"
+    - debug: msg={{all_hostnames}}
+
+    - name: Prepare ocp3 nodes for nfs deployment and increase time in charlie.conf file
+      shell: "mkdir -p /srv/ ;chcon -Rt svirt_sandbox_file_t /srv/; echo 'HOURS=120' > /etc/charlie.conf"
+      delegate_to: "{{ item }}"
+      loop: "{{ all_hostnames }}"
+
+  - name: Show login command
+    debug: msg={{ 'oc login ' + api_url + ' -u kubeadmin -p ' + admin_pass + ' --insecure-skip-tls-verify'}}
+
+  - name: Execute login command.
+    command: "{{ 'oc login ' + api_url + ' -u kubeadmin -p ' + admin_pass + ' --insecure-skip-tls-verify' }}"
+    
+
