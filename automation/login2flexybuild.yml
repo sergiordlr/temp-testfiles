@@ -1,15 +1,8 @@
 - hosts: localhost
   vars:
     flexyjob_url: "https://openshift-qe-jenkins.rhev-ci-vms.eng.rdu2.redhat.com/job/Launch%20Environment%20Flexy/"
-    build_number:  "80351"
-#  roles:
-#  - role: nginx-pv
-#    namespace: "nginx-cloud2cloud"
-#    src_storage_class: "{{ platform_sc }}"
-#    dst_storage_class: "{{ platform_sc }}"
-#    pv: true
-
-
+    build_number:  "xxx"
+    ssh_key: "xxx"
   tasks:
   - name: Extract credentials from flexy job build
     block:
@@ -58,7 +51,7 @@
         name: "{{ item }}" 
         ansible_host: "{{ item }}"  
         ansible_user: root
-        ansible_ssh_private_key_file: "~/.ssh/openshift-qe.pem"
+        ansible_ssh_private_key_file: "{{ ssh_key }}"
         ansible_ssh_extra_args: "-o StrictHostKeyChecking=no"
         ansible_ssh_common_args: '-o userknownhostsfile=/dev/null'
       loop: "{{ all_hostnames }}"
