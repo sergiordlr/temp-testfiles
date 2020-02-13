@@ -11,12 +11,14 @@
 
     - name: Get 4.x kubeconfig
       uri:
+        validate_certs: false
         url: " {{ flexyjob_url + build_number + '/artifact/workdir/install-dir/auth/kubeconfig/*view*/' }} "
         return_content: yes
       register: kubeconfig
 
     - name: Get 4.x password
       uri:
+        validate_certs: false
         url: " {{ flexyjob_url + build_number + '/artifact/workdir/install-dir/auth/kubeadmin-password/*view*/' }} "
         return_content: yes
       register: admin_password
@@ -32,6 +34,7 @@
         msg: "Not a 4.x build. Trying to get credentials from 3.x build now."
     - name: Get 3.x host spec
       uri:
+        validate_certs: false
         url: "{{ flexyjob_url + build_number + '/artifact/host.spec/*view*/' }}"
         return_content: yes
       register: this
