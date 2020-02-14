@@ -5,6 +5,8 @@
       api_version: config.openshift.io/v1
       kind: ClusterVersion
     register: cv
+    until: cv.resources | length != 0
+    retries: 15
 
   - fail:
       msg: "Ocp is not a 4.x cluster"
