@@ -1,0 +1,72 @@
+- name: Get cluster version
+  block:
+  - name: Check cluster version for 4.x
+    k8s_facts:
+      kind: ClusterVersion
+    register: cv
+
+  - debug:
+      msg: 4.x cluster. Start /src directory configuration
+
+  - name: Get all nodes
+    k8s_facts:
+      kind: Node
+    register: nodes
+    until: nodes.resources | length > 0
+
+  - set_fact:
+      all_nodes: "{{ nodes | json_query('resources[].metadata.name') }}"
+
+  - name: Configuring /srv directory in all cluster nodes
+    expect:
+      command: "oc debug node/{{ item }}"
+      echo: yes
+      responses:
+        (?i).*#:
+          - "chroot /host\n"
+          - "mkdir -p /srv/;  chcon -Rt svirt_sandbox_file_t /srv/\n"
+          - "exit\n"
+          - "exit\n"
+    loop: "{{ all_nodes }}"
+
+  rescue:
+  - name: Skip nodes preparation
+    debug:
+      msg: "3.x clusters are not prepared"
+
+
+- name: Create SCC
+  k8s:
+    state : present
+    namespace: "{{ installation_namespace }}"
+    definition: "{{ lookup('file', 'scc.yaml' )}}"
+
+- name: Create RBAC
+  k8s:
+    state : present
+    namespace: "{{ installation_namespace }}"
+    definition: "{{ lookup('file', 'rbac.yaml' )}}"
+
+- name: Deploy provisioner
+  k8s:
+    state : present
+    namespace: "{{ installation_namespace }}"
+    definition: "{{ lookup('file', 'deployment.yaml' )}}"
+
+- name: Create storage class
+  k8s:
+    state : present
+    namespace: "{{ installation_namespace }}"
+    definition: "{{ lookup('file', 'class.yaml' )}}"
+
+
+- name: Check provisioner pod status
+  k8s_facts:
+    kind: Pod
+    namespace: "{{ installation_namespace }}"
+    label_selectors: "app=nfs-provisioner"
+    field_selectors: 
+    - status.phase=Running
+  register: pod
+  until: "true in (pod | json_query('resources[].status.containerStatuses[].ready'))"
+  retries: 30
