@@ -1,20 +1,13 @@
 - name: Get cluster version
   block:
   - name: Check cluster version for 4.x
-    shell: "oc get clusterversion"
-
-#  - name: Check cluster version for 4.x
-#    k8s_facts:
-#      api_version: config.openshift.io/v1
-#      kind: clusterversions
-#      #kind: ClusterVersion
-#    register: cv
-#    until: cv.resources | length != 0
-#    retries: 15
-#
-#  - fail:
-#      msg: "Ocp is not a 4.x cluster"
-#    when: cv.resources | length == 0
+    k8s_facts:
+      api_version: config.openshift.io/v1
+      kind: clusterversions
+      #kind: ClusterVersion
+    register: cv
+    until: cv.resources | length != 0
+    retries: 3
 
   - debug:
       msg: 4.x cluster. Start /src directory configuration
@@ -41,7 +34,7 @@
     loop: "{{ all_nodes }}"
 
   rescue:
-  - name: Skip nodes preparation
+  - name: 3.x cluster. Skip nodes preparation
     debug:
       msg: "Skip this step for 3.x clusters"
 
