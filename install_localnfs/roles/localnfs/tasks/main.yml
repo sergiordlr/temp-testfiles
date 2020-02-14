@@ -1,7 +1,7 @@
 - name: Get cluster version
   block:
   - name: Check cluster version for 4.x
-    shell: "oc get cluterversion"
+    shell: "oc get clusterversion"
 
 #  - name: Check cluster version for 4.x
 #    k8s_facts:
