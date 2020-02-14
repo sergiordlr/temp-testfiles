@@ -39,17 +39,17 @@
       msg: "Skip this step for 3.x clusters"
 
 
-- name: Create SCC
-  k8s:
-    state : present
-    namespace: "{{ installation_namespace }}"
-    definition: "{{ lookup('file', 'scc.yaml' )}}"
-
 - name: Create RBAC
   k8s:
     state : present
     namespace: "{{ installation_namespace }}"
     definition: "{{ lookup('file', 'rbac.yaml' )}}"
+
+- name: Create SCC
+  k8s:
+    state : present
+    namespace: "{{ installation_namespace }}"
+    definition: "{{ lookup('file', 'scc.yaml' )}}"
 
 - name: Deploy provisioner
   k8s:
