@@ -5,6 +5,10 @@
       kind: ClusterVersion
     register: cv
 
+  - fail:
+      msg: "Ocp is not a 4.x cluster"
+    when: cv.resources | length == 0
+
   - debug:
       msg: 4.x cluster. Start /src directory configuration
 
@@ -32,7 +36,7 @@
   rescue:
   - name: Skip nodes preparation
     debug:
-      msg: "3.x clusters are not prepared"
+      msg: "Skip this step for 3.x clusters"
 
 
 - name: Create SCC
