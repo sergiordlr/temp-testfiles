@@ -13,5 +13,7 @@ spec:
     resources:
       requests:
         storage: {{ ocs_mcg_pv_pool_pv_size }}
+{% if ocs_mcg_pv_pool_pv_storageclass is defined %}
     storageClass: {{ ocs_mcg_pv_pool_pv_storageclass }}
+{% endif %}
   type: pv-pool

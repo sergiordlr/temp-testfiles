@@ -13,7 +13,8 @@ ocs_mcg_pv_pool: true
 ocs_mcg_pv_pool_bucket_name: mcg
 ocs_mcg_pv_pool_pv_size: 50Gi
 ocs_mcg_pv_pool_pv_quantity: 3
-ocs_mcg_pv_pool_pv_storageclass: gp2
+# Uncomment next line to use a given storage class instead of the default one
+# ocs_mcg_pv_pool_pv_storageclass: gp2
 ocs_namespace: ocs-storage
 ocs_release: v4.2.1
 silent: false
