@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-test
+spec:
+  containers:
+  - name: podtest
+    image: alpine
+    command: [ "/bin/sh", "-c", "--" ]
+    args: [ "while true; do sleep 30; done;" ]
+    volumeMounts:
+    - name: testvolume
+      mountPath: /data/redis
+  volumes:
+  - name: testvolume
+    persistentVolumeClaim:
+      claimName: redis
+      #claimName: postgres-storage
+

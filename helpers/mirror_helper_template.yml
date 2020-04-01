@@ -1,0 +1,75 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+labels:
+  template: mirror-helper
+metadata:
+  annotations:
+    description: |-
+      Deploys a pod with ocp 4.4 binary inside. This binary has the mirror image functionality and will be used in this template to mirror an image to internal registry
+  name: mirror-helper
+
+objects:
+- apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    name: mirror-sa
+    namespace: ${NAMESPACE}
+
+- apiVersion: rbac.authorization.k8s.io/v1
+  kind: ClusterRoleBinding
+  metadata:
+    name: mirror-helper
+    namespace: ${NAMESPACE}
+  roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: registry-editor
+  subjects:
+  - kind: ServiceAccount
+    name: mirror-sa
+    namespace: ${NAMESPACE}
+    
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    name: mirrorer-pod
+    namespace: ${NAMESPACE}
+  spec:
+    serviceAccountName: mirror-sa
+    restartPolicy: OnFailure
+    containers:
+    - name: podtest
+      image: quay.io/sregidor/oc44:latest
+      env:
+      - name: INTERNAL_REGISTRY
+        value: ${INT_REGISTRY}
+      - name: SOURCE_IMAGE
+        value: ${SRC_IMAGE}
+      - name: TARGET_IMAGE
+        value: test/hello2-mirror:latest
+      command: [ "/bin/sh", "-c", "--" ]
+      args:
+      -  "echo '{\"auths\": {\"'${INTERNAL_REGISTRY}'\": { \"auth\": \"'$(echo -n $(oc whoami | sed 's/.*://')\":\"$(oc whoami -t) | base64 -w 0)'\"}}}' > /tmp/config ;
+          oc image  mirror ${SOURCE_IMAGE} ${INTERNAL_REGISTRY}/${TARGET_IMAGE} --insecure=true --registry-config=/tmp/config;"
+
+
+parameters:
+- description: Internal registry. Target registry.
+  displayName: Internal registry
+  name: INT_REGISTRY
+  required: true
+  value: docker-registry.default.svc:5000
+- description: Source image to be mirrored. Full image name, include the source registry and tag too.
+  displayName: Source image
+  name: SRC_IMAGE
+  required: true
+  value: docker.io/library/alpine:latest
+- description: Target image where the source image will be mirrored to. Include the namespace.
+  displayName: Target image
+  name: TGT_IMAGE
+  required: true
+  value: test/test-mirror:latest
+- description: Namespace where the template will be deployed
+  displayName: Namespace
+  name: NAMESPACE
+  required: true
