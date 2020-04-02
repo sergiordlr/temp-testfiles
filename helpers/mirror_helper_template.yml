@@ -32,7 +32,7 @@ objects:
 - apiVersion: v1
   kind: Pod
   metadata:
-    name: mirrorer-pod
+    generateName: mirrorer-pod
     namespace: ${NAMESPACE}
   spec:
     serviceAccountName: mirror-sa
@@ -46,7 +46,7 @@ objects:
       - name: SOURCE_IMAGE
         value: ${SRC_IMAGE}
       - name: TARGET_IMAGE
-        value: test/hello2-mirror:latest
+        value: ${TGT_IMAGE}
       command: [ "/bin/sh", "-c", "--" ]
       args:
       -  "echo '{\"auths\": {\"'${INTERNAL_REGISTRY}'\": { \"auth\": \"'$(echo -n $(oc whoami | sed 's/.*://')\":\"$(oc whoami -t) | base64 -w 0)'\"}}}' > /tmp/config ;
