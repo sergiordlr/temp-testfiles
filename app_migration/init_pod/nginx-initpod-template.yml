@@ -13,7 +13,8 @@ objects:
     labels:
       app: ${NAME}
   spec:
-    replicas: ${REPLICAS}
+    #replicas: ${REPLICAS}
+    replicas: 1
     selector:
       matchLabels:
         app: ${NAME}
@@ -75,11 +76,11 @@ parameters:
   name: INIT_IMAGE
   required: true
   value: "alpine"
-- description: Number of replicas created
-  displayName: Replicas
-  name: REPLICAS
-  required: true
-  value: "1"
+#- description: Number of replicas created
+#  displayName: Replicas
+#  name: REPLICAS
+#  required: true
+#  value: "1"
 - description: Name used for the application.
   displayName: Name
   name: NAME
