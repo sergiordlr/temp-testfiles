@@ -102,7 +102,7 @@ objects:
       targetPort: 8081
     selector:
       app: ${NAME}
-    type: LoadBalancer
+    type: ${SERVICE}
   
 - apiVersion: route.openshift.io/v1
   kind: Route
@@ -120,6 +120,11 @@ objects:
       targetPort: 8081
   
 parameters:
+- description: Kind of service to be used.
+  displayName: Service
+  name: SERVICE
+  required: false
+  value: "ClusterIP"
 - description: Access mode to be used in the html volume.
   displayName: Html Access Mode
   name: HTML_ACCESSMODE
