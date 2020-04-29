@@ -77,7 +77,11 @@ objects:
             persistentVolumeClaim:
              claimName: ${NAME}-html
         containers:
-        - image: docker.io/twalter/openshift-nginx
+        - image: quay.io/sregidor/openshift-nginx
+          resources:
+            limits:
+              cpu: "1"
+              memory: 128Mi
           name: ${NAME}
           ports:
           - containerPort: 8081
