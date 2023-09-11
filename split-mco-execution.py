@@ -18,6 +18,8 @@ count = 0
 tests_batch = []
 # Strips the newline character
 for line in file.readlines():
+    if line.strip("\n ") == "":
+        continue
     count+=1
     result = re.search(r".+-(\d+)-.+", line)
     tc = result.group(1)
