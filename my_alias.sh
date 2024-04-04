@@ -32,6 +32,8 @@ alias podsinnode='function __lgb() { unset -f __lgb; oc get pods   --all-namespa
 # copy2node ip-10-0-198-67.us-east-2.compute.internal /my/local/file.file /my/host/file.copy
 alias copy2node='function __lgb() { unset -f __lgb; oc cp $2 openshift-machine-config-operator/$(oc get pods -n openshift-machine-config-operator -l "k8s-app=machine-config-daemon" --field-selector "spec.nodeName=$1" -ojsonpath="{.items[0].metadata.name}"):/rootfs/$3; }; __lgb'
 
+alias copyfromnode='function __lgb() { unset -f __lgb; oc cp openshift-machine-config-operator/$(oc get pods -n openshift-machine-config-operator -l "k8s-app=machine-config-daemon" --field-selector "spec.nodeName=$1" -ojsonpath="{.items[0].metadata.name}"):/rootfs$2 $3; }; __lgb'
+
 alias ocpupgrade='function __lgb() { unset -f __lgb; oc adm upgrade --to-image=$1  --force --allow-explicit-upgrade; }; __lgb'
 
 alias wdebug='function __lgb() { unset -f __lgb; oc debug -q node/$(oc get nodes -l node-role.kubernetes.io/worker -ojsonpath="{.items[0].metadata.name}") $@; }; __lgb'
