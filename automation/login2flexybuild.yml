@@ -1,6 +1,8 @@
+# alias login2build='function __lgb() { unset -f __lgb; ansible-playbook  /usr/local/etc/login2flexybuild.yml -e build_number=$1; }; __lgb'
+
 - hosts: localhost
   vars:
-    flexyjob_url: "https://openshift-qe-jenkins.rhev-ci-vms.eng.rdu2.redhat.com/job/Launch%20Environment%20Flexy/"
+    flexyjob_url: "https://blah-blah.r-ci-vms.eng.com/job/Launch%20Environment%20Flexy/"
     build_number:  "xxx"
     ssh_key: "xxx"
   tasks:
