@@ -47,3 +47,9 @@ alias getpullsecret='function __lgb() { unset -f __lgb; set -x; oc get secret pu
 alias setpullsecret='function __lgb() { unset -f __lgb; set -x; oc set data secret pull-secret -n openshift-config --from-file=.dockerconfigjson=$1; set +x; }; __lgb'
 
 alias nodeswithconfigs='oc get node -o custom-columns="NAME":.metadata.name,"ROLE":"node\-role\.kubernetes\.io/master","ZONE":".metadata.labels.topology\.kubernetes\.io/zone","CURRENT CONFIG":".metadata.annotations.machineconfiguration\.openshift\.io/currentConfig","DESIRED CONFIG":".metadata.annotations.machineconfiguration\.openshift\.io/desiredConfig"'
+
+alias execInNodes='function __lgb() { unset -f __lgb; set +x; for node in $(oc get nodes -o name); do echo -e "\n##### Node $node"; oc debug -q $node -- chroot /host $@; done; set +x; }; __lgb'
+
+alias execInWorkers='function __lgb() { unset -f __lgb; set +x; for node in $(oc get nodes  -l node-role.kubernetes.io/worker -o name); do echo -e "\n##### Node $node"; oc debug -q $node -- chroot /host $@; done; set +x; }; __lgb'
+
+alias execInMasters='function __lgb() { unset -f __lgb; set +x; for node in $(oc get nodes  -l node-role.kubernetes.io/master -o name); do echo -e "\n##### Node $node"; oc debug -q $node -- chroot /host $@; done; set +x; }; __lgb'
