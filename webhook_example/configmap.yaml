@@ -1,0 +1,69 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: unschedulable-webhook-script
+  namespace: default
+data:
+  webhook.py: |
+    from flask import Flask, request, jsonify
+    import json
+    import base64
+    import os
+    import ssl
+
+    app = Flask(__name__)
+
+    @app.route('/mutate', methods=['POST'])
+    def mutate():
+        admission_review = request.json
+        uid = admission_review['request']['uid']
+        request_obj = admission_review['request']['object']
+        old_obj = admission_review['request']['oldObject']
+        operation = admission_review['request']['operation']
+
+        print(f"Received admission request for UID: {uid}, Operation: {operation}")
+
+        response = {
+            "apiVersion": "admission.k8s.io/v1",
+            "kind": "AdmissionReview",
+            "response": {
+                "uid": uid,
+                "allowed": True
+            }
+        }
+
+        if operation in ["UPDATE", "PATCH"] and request_obj.get("kind") == "Node":
+            new_unschedulable = request_obj.get("spec", {}).get("unschedulable")
+            old_unschedulable = old_obj.get("spec", {}).get("unschedulable")
+
+            print(f"Node update: new_unschedulable={new_unschedulable}, old_unschedulable={old_unschedulable}")
+
+            if new_unschedulable != old_unschedulable:
+                response['response']['allowed'] = False
+                response['response']['status'] = {
+                    "message": "Changing .spec.unschedulable on node is forbidden.",
+                    "code": 403
+                }
+                print("Forbidden: Changing .spec.unschedulable on node.")
+            else:
+                print("Allowed: .spec.unschedulable on node has not changed.")
+        else:
+            print(f"Allowed: Operation {operation} or resource kind {request_obj.get('kind')} is not subject to this webhook's specific rules.")
+
+        return jsonify(response)
+
+    if __name__ == '__main__':
+        # Paths to the mounted certificates
+        cert_path = "/etc/webhook/certs/tls.crt"
+        key_path = "/etc/webhook/certs/tls.key"
+
+        # Ensure the certificates exist
+        if not os.path.exists(cert_path) or not os.path.exists(key_path):
+            print(f"Error: Certificate or key not found at {cert_path} and {key_path}")
+            exit(1)
+
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        context.load_cert_chain(cert_path, key_path)
+
+        print("Starting Flask server with SSL...")
+        app.run(host='0.0.0.0', port=8443, ssl_context=context)

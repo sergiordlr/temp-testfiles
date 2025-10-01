@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: unschedulable-webhook
+  namespace: default
+  labels:
+    app: unschedulable-webhook
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: unschedulable-webhook
+  template:
+    metadata:
+      labels:
+        app: unschedulable-webhook
+    spec:
+      containers:
+        - name: unschedulable-webhook
+          image: python:3.9-slim-buster # Using a base Python image
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8443
+          command: ["/bin/bash", "-c"]
+          args: ["pip install Flask && python /etc/webhook/script/webhook.py"]
+          volumeMounts:
+            - name: webhook-certs
+              mountPath: /etc/webhook/certs
+              readOnly: true
+            - name: webhook-script
+              mountPath: /etc/webhook/script
+              readOnly: true
+      volumes:
+        - name: webhook-certs
+          secret:
+            secretName: unschedulable-webhook-certs
+        - name: webhook-script
+          configMap:
+            name: unschedulable-webhook-script
+---

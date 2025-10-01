@@ -1,0 +1,25 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: unschedulable-webhook-config
+webhooks:
+- admissionReviewVersions:
+  - v1
+  - v1beta1
+  clientConfig:
+    caBundle: <your CA bundle here>
+    service:
+      name: unschedulable-webhook-service
+      namespace: default
+      path: /mutate
+  name: unschedulable-webhook.default.svc
+  rules:
+  - apiGroups:
+    - ''
+    apiVersions:
+    - v1
+    operations:
+    - UPDATE
+    resources:
+    - nodes
+  sideEffects: None
