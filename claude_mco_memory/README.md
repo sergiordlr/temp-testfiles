@@ -1,7 +1,8 @@
 # MCO Claude memory
 
-In this file we try to describe some of the operations that MCO can do, so that Claude can understand them and use them.
+In the CLAUDE.md file we try to describe some of the operations that MCO can do, so that Claude can understand them and use them.
 
+Just copy the CLAUDE.md file to your current repo, or copy it to ~/.claude/CLAUDE.md
 
 ## Prepare cluster
 
