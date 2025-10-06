@@ -25,6 +25,8 @@ In the credentials.json file should be included the credentials to access the ex
 - Configure realtime kernel type in the worker pool
 - Configure a new osImage in the worker pool with the cowsay package
 - Enable OCL in the worker pool with a container installing the yq binary
+- Enable ssh login in the worker pool
+- Is fips enabled in the worker pool?
 ....
 
 # OpenShift Machine Config Operator (MCO) Operations. (AI generated summary)
