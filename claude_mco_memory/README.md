@@ -61,8 +61,8 @@ Based on CLAUDE.md, here are the operations I can perform:
 - Configure FIPS settings (installation-time only)
 - Configure custom osImage URLs (sha256 only, no tags)
 - Configure kernel types (default, realtime, 64k-pages)
-- Configure user passwords (using openssl-generated hashes)
-- Configure SSH keys for users
+- Configure user passwords (using openssl-generated hashes with `openssl passwd -6`)
+- Configure SSH keys for users (auto-generate key pair if not provided)
 
 ## Image and Container Management
 - Create CoreOS-compatible Containerfiles
@@ -72,3 +72,4 @@ Based on CLAUDE.md, here are the operations I can perform:
 ## Recovery Operations
 - Recover degraded MachinConfigPools by removing offending MCs
 - Sync node annotations (desiredConfig = currentConfig)
+- Force re-apply configuration by creating `/run/machine-config-daemon-force` file on node
