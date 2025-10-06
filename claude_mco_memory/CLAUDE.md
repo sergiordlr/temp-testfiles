@@ -9,7 +9,7 @@ If no image is specified use: quay.io/your-external-registry/here
 
 IMPORTANT: The images will be coreOS, so we need to take that into account when creating the Containerfile. We need to apply all the restrictions/special cases that apply to coreOS.
 
-IMPORTANT: Base image have no yum repo configured. If you need to install a package in a Containerfile and no repo is specified, add the stream centos "bases" and "appstream" yum repos and the epel repo in the Containerfile. Explicitly notify that you are going to use this repos to the user asking for the image.
+IMPORTANT: Base image have no yum repo configured. If you need to install a package in a Containerfile and no repo is specified, add the stream centos "bases" and "appstream" yum repos and the epel repo in the Containerfile. Explicitly notify that you are going to use these repos to the user asking for the image.
 
 IMPORTANT: Create the temporary files in a tmp dir in the current directory. Do NOT use the /tmp directory.
 
@@ -27,7 +27,7 @@ IMPORTANT: Do never print those credentials on the screen
 Steps to prepare a cluster for testing
 - if the cluster has more than 2 worker nodes, scale the machinesets so that the cluster has 2 worker nodes only.
 - check if the credentials in file credentials.json are present in the pull-secret secret in the openshift-config namespace, if and only if they are not present add them to the secret.
-- if the those credentials were added to the pull-secret, check that the pools start updating.
+- if those credentials were added to the pull-secret, check that the pools start updating.
 - wait for all the MachineConfigPools to be updated.
 
 Do not use machineset .status.availableReplicas to count existing nodes. Use the nodes directly.
@@ -120,7 +120,7 @@ Once the MachineOSBuild succeeds we need to wait until the MCP is updated and up
 
 In order to disable OCL in a MCP we need to delete the MachineOSConfig resource for this pool.
 
-After deleting the MachineOSConfig resource we need to wait for the pool to start updating, and the to finish the update.
+After deleting the MachineOSConfig resource we need to wait for the pool to start updating, and then to finish the update.
 
 # Off Cluster Layering. Create a new base osImage
 
@@ -172,7 +172,7 @@ After removing the nodes from the custom pool, and before removing the custom po
 
 # MachineConfig (MC)
 
-MachineConfigs are used to configure the nodes in the MachineWorkerPools
+MachineConfigs are used to configure the nodes in the MachineConfigPools
 
 ## Add a new file
 
@@ -320,3 +320,13 @@ When a MCP is degraded, in order to recover the cluster we need to:
 - Remove the offending MC
 - Configure the node being degraded so that "machineconfiguration.openshift.io/desiredConfig" annotation has the same value as  "machineconfiguration.openshift.io/currentConfig"
 - Wait for the MCP to stop being degraded after reconfiguring the degraded nodes' annotations
+
+If the problem is not fixed after this, we can try to re-apply the configuration in the degraded node.
+
+# Force re-apply configuration
+
+We can force MCO to re-apply the configuration in a node by creating this file in the node:
+
+```
+/run/machine-config-daemon-force
+```
