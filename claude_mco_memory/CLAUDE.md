@@ -7,15 +7,15 @@ Openshift clusters accessed using the "oc" binary. The kubeconfig file will be a
 
 If no image is specified use: quay.io/your-external-registry/here
 
-IMPORTANT: The images will be coreOS, so we need to take that into account when createing the Containerfile. We need to apply all the restrictions/special cases that apply to coreOS.
+IMPORTANT: The images will be coreOS, so we need to take that into account when creating the Containerfile. We need to apply all the restrictions/special cases that apply to coreOS.
 
-IMPORTANT: Base image have no yum repo configured. If you need to install a package in a Containerfile and no repo is specified, add the stream centos "bases" and "appstream" yum repos and the epel repo in the Conatinerfile. Explictitly notify that you are oging to use this repos to the user asking for the image.
+IMPORTANT: Base image have no yum repo configured. If you need to install a package in a Containerfile and no repo is specified, add the stream centos "bases" and "appstream" yum repos and the epel repo in the Containerfile. Explicitly notify that you are going to use this repos to the user asking for the image.
 
 IMPORTANT: Create the temporary files in a tmp dir in the current directory. Do NOT use the /tmp directory.
 
 # External image registry
 
-The docker config.json file to access the external regisry is  "credentials.json"
+The docker config.json file to access the external registry is  "credentials.json"
 
 Do not extract the user and password from the file to use "podman login", use the file directly when the interaction is with the registry.
 
@@ -25,10 +25,12 @@ IMPORTANT: Do never print those credentials on the screen
 
 # Prepare a cluster for testing
 Steps to prepare a cluster for testing
-- if the cluster has more than 2 worker nodes, scale the machinesets so that the cluster thas 2 worker nodes only.
-- check if the credentials in file credentials.json are present in the pull-secret secret in the openshift-config namespace, if and only if they are not prenset add them to the secret.
+- if the cluster has more than 2 worker nodes, scale the machinesets so that the cluster has 2 worker nodes only.
+- check if the credentials in file credentials.json are present in the pull-secret secret in the openshift-config namespace, if and only if they are not present add them to the secret.
 - if the those credentials were added to the pull-secret, check that the pools start updating.
 - wait for all the MachineConfigPools to be updated.
+
+Do not use machineset .status.availableReplicas to count existing nodes. Use the nodes directly.
 
 # Configuring On Cluster Layering mode (OCL) in a MachineConfigPool (MCP)
 
@@ -87,14 +89,14 @@ spec:
   baseImagePullSecret:
     name: <NAME-OF-THE-SECRET-IN-MCO-COPIED-FROM-PULL-SECRET>
   renderedImagePushSecret:
-    name: <NAME OF THE SECRET LINDEK TO THE "builder" SA IN MCO NAMESPACE>
+    name: <NAME OF THE SECRET LINKED TO THE "builder" SA IN MCO NAMESPACE>
   renderedImagePushSpec: "image-registry.openshift-image-registry.svc:5000/openshift-machine-config-operator/ocb-image:latest"
 ```
 
 
 ## Configuring custom Containerfile in a MachineOSConfig
 
-We can configure a custom Conatinerfile in a MacihneOSConfig like this:
+We can configure a custom Containerfile in a MachineOSConfig like this:
 
 ContainerfileArch
 
@@ -110,7 +112,7 @@ The "FROM" section of the container file is not added, since MCO will use the ri
 
 ## Verifications after creating the MachineOSConfig resource
 
-A new MachineOSBuild resource will automatically be created after we create the MachineOSConfig resource. We need to wait until this MachineOSBuild reports  a "Suceeded" true status.
+A new MachineOSBuild resource will automatically be created after we create the MachineOSConfig resource. We need to wait until this MachineOSBuild reports  a "Succeeded" true status.
 
 Once the MachineOSBuild succeeds we need to wait until the MCP is updated and upgraded.
 
@@ -122,7 +124,7 @@ After deleting the MachineOSConfig resource we need to wait for the pool to star
 
 # Off Cluster Layering. Create a new base osImage
 
-We can create new container images that can be used in the clusetr as osImages
+We can create new container images that can be used in the cluster as osImages
 
 When we want to create a new osImage we execute this command to get the container base image:
 
@@ -132,7 +134,7 @@ oc adm release info --image-for "rhel-coreos"
 
 Then we use this image as the base image in a Containerfile to generate a new osImage
 
-The final image has to use the sha256 instead of the tag. When you get the sha246 value of an image, use `skopeo inspect`
+The final image has to use the sha256 instead of the tag. When you get the sha256 value of an image, use `skopeo inspect`
 
 # Custom MachineConfigPools
 
@@ -164,7 +166,7 @@ In order to remove the node from the pool, we need to remove that label.
 
 Important: Pools "master" and "worker" should NEVER  be deleted. 
 
-When we need to remove a custom MCP, we always need to check if ther pool has nodes. If that's the case, all nodes need to be removed from the MCP before removing it.
+When we need to remove a custom MCP, we always need to check if the pool has nodes. If that's the case, all nodes need to be removed from the MCP before removing it.
 
 After removing the nodes from the custom pool, and before removing the custom pool, we need to check that the nodes were correctly added to the worker pool and that the worker pool is reporting an "Updated" status. Only after checking that we can remove the custom pool.
 
@@ -184,7 +186,7 @@ kind: MachineConfig
 metadata:
   labels:
     machineconfiguration.openshift.io/role: worker #  here we define the pool where it will be applied
-  name: mc-exapmle
+  name: mc-example
 spec:
   config:
     ignition:
@@ -201,13 +203,13 @@ Where contents.source contains the base64 encoded content of the file in the way
 
 Where mode is the decimal representation of the octal permissions for the file. This is optional.
 
-Where path is the patch where the file will be placed in the nodes
+Where path is the path where the file will be placed in the nodes
 
 ## Configure kernel arguments
 
 A MC can be used to configure the kernel arguments in the nodes in a MCP
 
-To do that we need to create a MC with this spep
+To do that we need to create a MC with this spec
 
 ```
 spec:
@@ -222,7 +224,7 @@ Being KernelArg1, KernelArg2, KernelArg3.... the kernel arguments that we want t
 
 A MC can be used to configure if the nodes in a pool are using fips or not.
 
-IMPORTAN: fips can only be configured at installation time, so it cannot be reconfigured once the cluster is up and running
+IMPORTANT: fips can only be configured at installation time, so it cannot be reconfigured once the cluster is up and running
 
 The fips configuration is done like in this example:
 
@@ -230,7 +232,7 @@ The fips configuration is done like in this example:
 spec:
   fips: false # This is the fips value
 ```
-## Config OSImage. Off Cluster Layering
+## Configure OSImage. Off Cluster Layering
 
 A MC can be used to configure a new osImage for the nodes in a pool.
 
@@ -246,7 +248,7 @@ Extremely Important: The image always has to use the ONLY @sha256 name and NOT t
 This value is only taken into account if the pool is not configured with OCL. If the pool is configured to use OCL, then this value will be ignored.
 
 
-## COnfig kernel type
+## Configure kernel type
 
 A MC can be used to configure the kernel installed in the nodes in a pool.
 
@@ -261,6 +263,56 @@ spec:
 The supported values for kernel type are "realtime", "64k-pages" and "default"
 
 64k-pages kernel type can only be used in ARM clusters
+
+## Configure a password
+
+A MC can be used to configure a password for a user in the nodes in a pool.
+
+It is done like in this example:
+
+
+```
+spec:
+  config:
+    ignition:
+      version: 3.2.0
+    passwd:
+      users:
+      - name: core # User name that will use the password
+        passwordHash: "$6$uim4Ldknioeinfas,K$QJUwg.4lAyU4egsM7FNaNlSbuI6JfQCRufb99QuFasldkfhkbkukjb.0veXWN1HDqO.bxasdfmnhWYI1" # password's sha
+```
+
+If no user is specified, use the "core" user.
+
+To generate the password's hash we need to use this command:
+
+```
+openssl passwd -6 $USED_PASSWORD
+```
+
+## Configure a ssh key
+
+A MC can be used to configure ssh keys for a user in the nodes in a pool.
+
+It is done like in this example:
+
+```
+spec:
+  config:
+    ignition:
+      version: 3.2.0
+    passwd:
+      users:
+      - name: core # User name that will use the ssh key
+        sshAuthorizedKeys:
+        - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCWkwurd8TNAi+D7ffvyDdhGBSQtJx3/Yasdfaoinlkajhsdpfiu9832kj/GGQDgTJ17h3C9TEArI8ZqILnyydeY56DL+ELN3dtGBVof/N2qtW0+SmEnd1Mi7Qy5Tx4e/GVmB3NgX9szwNOVXhebzgBsXc9x+RtCVLPLC8J+qqSdTUZ0UfJsh2ptlQLGHmmTpF//QlJ1tngvAFeCOxJUhrLAa37P9MtFsiNk31EfKyBk3eIdZljTERmqFaoJCohsFFEdO7tVgU6p5NwniAyBGZVjZBzjELoI1aZ+/g9yReIScxl1R6PWqEzcU6lGo2hInnb6nuZFGb+90D example@rkey.com # public ssh key that will be configured in the nodes
+
+```
+
+If no user is specified, use the "core" user.
+
+If no public key is provided generate a ssh key pair and use the public key in the MC
+
 
 # Degradation recovery attempt
 
