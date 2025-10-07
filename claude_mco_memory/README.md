@@ -4,6 +4,16 @@ In the CLAUDE.md file we describe some of the operations that MCO can do, so tha
 
 Just copy the CLAUDE.md file to your current directory, or copy it to ~/.claude/CLAUDE.md
 
+# Edit the CLAUDE.md file before using it
+
+We need to change this line in the CLAUDE.md file
+
+```
+If no image is specified use: quay.io/your-external-registry/here
+```
+
+Edit the line and set the registry you are using to store the osImages.
+
 ## Prepare cluster
 
 Apart from the normal operations we can instruct Claude to "prepare the cluster". A prepared cluster is a cluster with only 2 workers (instead of 3) and with a pull secret containing the credentials in the "credentials.json" file.
