@@ -2,14 +2,14 @@ Whenever we talk about a cluster we talk about an openshift cluster.
 
 Whenever we talk about the "pull-secret" we talk about the "pull-secret" stored in the "openshift-config" namespace in the cluster
 
-Openshift clusters accessed using the "oc" binary. The kubeconfig file will be already configured via env var, so no need to do anything to login to the cluster.
+Openshift clusters are accessed using the "oc" binary. The kubeconfig file will be already configured via env var, so no need to do anything to login to the cluster.
 
 
 If no image is specified use: quay.io/your-external-registry/here
 
 IMPORTANT: The images will be coreOS, so we need to take that into account when creating the Containerfile. We need to apply all the restrictions/special cases that apply to coreOS.
 
-IMPORTANT: Base image have no yum repo configured. If you need to install a package in a Containerfile and no repo is specified, add the stream centos "bases" and "appstream" yum repos and the epel repo in the Containerfile. Explicitly notify that you are going to use these repos to the user asking for the image.
+IMPORTANT: Base images have no yum repo configured. If you need to install a package in a Containerfile and no repo is specified, add the stream centos "base" and "appstream" yum repos and the epel repo in the Containerfile. Explicitly notify that you are going to use these repos to the user asking for the image.
 
 IMPORTANT: Create the temporary files in a tmp dir in the current directory. Do NOT use the /tmp directory.
 
@@ -76,7 +76,6 @@ We need to create a MachineOSConfig resource so that:
 - the baseImagePullSecret.name value has to be the name of a copy of the pull-secret secret in the openshift-machine-config-operator namespace
 - the renderedImagePushSecret.name is the name of the secret linked to the ServiceAccount with name "builder" in the openshift-machine-config-operator namespace
 - renderedImagePushSpec  and imageBuilderType has always the same value
-- renderedImagePushSpec  and imageBuilderType has always the same value
 
 ```
 apiVersion: machineconfiguration.openshift.io/v1
@@ -91,7 +90,7 @@ spec:
   baseImagePullSecret:
     name: <NAME-OF-THE-SECRET-IN-MCO-COPIED-FROM-PULL-SECRET>
   renderedImagePushSecret:
-    name: <NAME OF THE SECRET LINKED TO THE "builder" SA IN MCO NAMESPACE>
+    name: <NAME-OF-THE-SECRET-LINKED-TO-THE-"builder"-SA-IN-MCO-NAMESPACE>
   renderedImagePushSpec: "image-registry.openshift-image-registry.svc:5000/openshift-machine-config-operator/ocb-image:latest"
 ```
 
@@ -242,7 +241,7 @@ It is done like in this example
 
 ```
 spec:
-  osImageURL: quay.io/image/used/as/osimage@sha25633af909a38fa2ab31db86e6edf1191f2033de6971e10f8249fb # This is the osImage used in the cluster
+  osImageURL: quay.io/image/used/as/osimage@sha256:33af909a38fa2ab31db86e6edf1191f2033de6971e10f8249fb # This is the osImage used in the cluster
 ```
 
 Extremely Important: The image always has to use the ONLY @sha256 name and NOT the tag. Tag and sha256 at the same time is not supported. Values like "quay.io/user/mylayer:cowsay-osimage@sha256:60eab74f607f157d9557d9fd3a0231f1a9bd05a7f67aa210cf7002790a1a4379" are not allowed. There should be no reference to tag AT ALL.
@@ -315,6 +314,90 @@ If no user is specified, use the "core" user.
 
 If no public key is provided generate a ssh key pair and use the public key in the MC
 
+## Configure extensions
+
+A MC can be used to enable extensions in the nodes in a pool.
+
+An extension is a set of packages that will be included in the nodes installing this extension.
+
+Map of extensions and packages for each extension for Openshift 4.21 extracted from https://github.com/openshift/machine-config-operator/blob/main/pkg/controller/common/helpers.go
+```
+        {
+                "two-node-ha":          {"pacemaker", "pcs", "fence-agents-all"},
+                "wasm":                 {"crun-wasm"},
+                "ipsec":                {"NetworkManager-libreswan", "libreswan"},
+                "usbguard":             {"usbguard"},
+                "kerberos":             {"krb5-workstation", "libkadm5"},
+                "kernel-devel":         {"kernel-devel", "kernel-headers"},
+                "sandboxed-containers": {"kata-containers"},
+                "sysstat":              {"sysstat"},
+        }
+```
+An extension is installed like in this example:
+
+```
+spec:
+  extensions:
+  - usbguard
+  - kerberos
+  - kernel-devel
+  - sandboxed-containers
+```
+
+## Configure System Units
+
+## Configure a new system unit's content
+A MC can be used to configure system units in the nodes in a pool.
+
+Units are configured like this:
+
+```
+spec:
+  config:
+    ignition:
+      version: 3.2.0
+    systemd:
+      units:
+        - name: my-custom.service  # Name of the unit
+          mask: false              # Optional. Is the unit masked?
+          enabled: true            # Is the unit enabled?
+          contents: |              # Content of the unit
+            [Unit]
+            Description=My Custom Service
+            After=network.target
+
+            [Service]
+            Type=simple
+            ExecStart=/usr/local/bin/my-custom-script.sh
+            Restart=always
+
+            [Install]
+            WantedBy=multi-user.target
+
+```
+
+### Configure a system unit's dropin files
+
+A systemd drop-in file is a small configuration file that extends or overrides parts of an existing systemd unit without replacing the entire unit file.
+
+A MC can be used to configure/add drop-in files for the units in the nodes in a pool.
+
+It is done like this:
+
+```
+spec:
+  config:
+    ignition:
+      version: 3.2.0
+    systemd:
+      units:
+        - name: kubelet.service         # System unit
+          dropins:
+            - name: 10-extra-args.conf  # Name of the drop-in file
+              contents: |               # Content of the drop-in file
+                [Service]
+                Environment="KUBELET_EXTRA_ARGS=--node-labels=env=dev --max-pods=200"
+```
 
 # Degradation recovery attempt
 
