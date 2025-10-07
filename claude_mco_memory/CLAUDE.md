@@ -36,6 +36,8 @@ Do not use machineset .status.availableReplicas to count existing nodes. Use the
 
 OCL can be configured with internal registry or external registry
 
+IMPORTANT: If the kind of registry is not specified then always use external registry
+
 ##  Using external registry
 
 We need to create a MachineOSConfig resource so that:
