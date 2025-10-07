@@ -50,7 +50,7 @@ Based on CLAUDE.md, here are the operations I can perform:
 ## On Cluster Layering (OCL)
 - Configure OCL with external registry (create MachineOSConfig with pull/push secrets)
 - Configure OCL with internal registry (create MachineOSConfig using builder SA)
-- Add custom Containerfiles to MachineOSConfig
+- Add custom Containerfiles to MachineOSConfig with architecture support (ARM64, AMD64, PPC64LE, S390X, NoArch)
 - Verify MachineOSBuild resources reach "Succeeded" status
 - Disable OCL by deleting MachineOSConfig
 
@@ -63,16 +63,19 @@ Based on CLAUDE.md, here are the operations I can perform:
 - Create custom MachineConfigPools
 - Add nodes to pools by adding labels
 - Remove nodes from pools by removing labels
-- Safely delete custom pools (migrate nodes first)
+- Safely delete custom pools (migrate nodes first, verify worker pool status)
 
 ## MachineConfig Operations
-- Add files to nodes (with base64-encoded content and permissions)
+- Add files to nodes (with base64-encoded content and permissions in decimal format)
 - Configure kernel arguments
 - Configure FIPS settings (installation-time only)
-- Configure custom osImage URLs (sha256 only, no tags)
-- Configure kernel types (default, realtime, 64k-pages)
+- Configure custom osImage URLs (sha256 only, no tags allowed)
+- Configure kernel types (default, realtime, 64k-pages for ARM)
 - Configure user passwords (using openssl-generated hashes with `openssl passwd -6`)
 - Configure SSH keys for users (auto-generate key pair if not provided)
+- Configure extensions (two-node-ha, wasm, ipsec, usbguard, kerberos, kernel-devel, sandboxed-containers, sysstat)
+- Configure system units (create new units with full content)
+- Configure systemd drop-in files (extend existing units)
 
 ## Image and Container Management
 - Create CoreOS-compatible Containerfiles
