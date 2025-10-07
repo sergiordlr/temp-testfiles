@@ -26,6 +26,8 @@ In the credentials.json file should be included the credentials to access the ex
 
 ## Prompt examples
 
+- Configure a new osImage in the worker pool with the cowsay package
+- Enable OCL in the worker pool with a containerfile installing the yq binary
 - Create a new custom pool with 1 node
 - Create a new custom pool named "infra" with 1 node and enable OCL in it
 - Disable OCL in the infra pool
@@ -33,10 +35,10 @@ In the credentials.json file should be included the credentials to access the ex
 - Create a new password in the worker pool
 - Configure kernel argument "arg=1" in worker pool
 - Configure realtime kernel type in the worker pool
-- Configure a new osImage in the worker pool with the cowsay package
-- Enable OCL in the worker pool with a container installing the yq binary
 - Enable ssh login in the worker pool
 - Is fips enabled in the worker pool?
+- Install ipsec in worker nodes
+- In the worker nodes create a  new unit that says "hello" when the node is starting
 ....
 
 # OpenShift Machine Config Operator (MCO) Operations. (AI generated summary)
