@@ -415,3 +415,85 @@ We can force MCO to re-apply the configuration in a node by creating this file i
 ```
 /run/machine-config-daemon-force
 ```
+
+# Pinned Image Set (PIS)
+
+PinnedImageSets pre-load and cache container images on nodes in a MachineConfigPool. This speeds up pod startup and reduces registry dependency.
+## Create a PinnedImageSet
+
+PinnedImageSet Template
+
+*Use APIversion `v1` for 4.18 > OCP version
+*Use APIversion `v1alpha1` for < 4.18 version
+```
+apiVersion: machineconfiguration.openshift.io/v1
+kind: PinnedImageSet
+metadata:
+  labels:
+    machineconfiguration.openshift.io/role: [MCP]
+  name: 99-pinned-set-example
+spec:
+  pinnedImages:
+  - name: quay.io/openshifttest/alpine@sha256:be92b18a369e989a6e86ac840b7f23ce0052467de551b064796d67280dfa06d5
+  - name: "quay.io/openshifttest/busybox@sha256:0415f56ccc05526f2af5a7ae8654baec97d4a614f24736e8eef41a4591f08019"
+```
+
+Where [MCP] defines the MachineConfigPool.
+
+## Generate PinnedImageSet from a release
+
+```
+apiVersion: machineconfiguration.openshift.io/v1
+kind: PinnedImageSet
+metadata:
+  labels:
+    machineconfiguration.openshift.io/role: ${MCP}
+  name: 99-${MCP}-pinned-release
+spec:
+  pinnedImages:
+$(oc adm release info "${TARGET}" -o pullspec | awk '{print "   - name: " $1}'| sort | uniq)
+
+```
+Where [TARGET] is registry from where images could be fetched 
+
+## Check PinnedImageSet status
+
+Check MCP progress:
+
+```
+oc get mcp {MCP} -o yaml | grep -A 10 poolSynchronizersStatus
+```
+
+When `updatedMachineCount` equals `machineCount`, pinning is complete.
+
+Check all nodes in a pool:
+
+```
+for node in $(oc get nodes -l node-role.kubernetes.io/{MCP} -o name)
+do
+   n=${node/node\//}
+   echo $n
+   oc get machineconfignode $n -o wide
+   oc get machineconfignode $n -ojsonpath='{.status.conditions[?(@.type=="PinnedImageSetsProgressing")]}' | jq
+   oc get machineconfignode $n -ojsonpath='{.status.conditions[?(@.type=="PinnedImageSetsDegraded")]}' | jq
+done
+```
+
+## Verify pinned images on node
+
+Access the node and check pinned images using crictl:
+
+```
+$ oc debug node/<node-name>
+#chroot /host
+#crictl images --pinned <pinned_image>
+```
+
+## Debug PinnedImageSet failures
+
+Check for errors on specific node:
+
+```
+oc get machineconfignode <node-name> -ojsonpath='{.status.conditions[?(@.type=="PinnedImageSetsDegraded")]}' | jq
+oc get machineconfignode <node-name> -ojsonpath='{.status.pinnedImageSets}' | jq
+```

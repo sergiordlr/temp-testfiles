@@ -39,6 +39,7 @@ In the credentials.json file should be included the credentials to access the ex
 - Is fips enabled in the worker pool?
 - Install ipsec in worker nodes
 - In the worker nodes create a  new unit that says "hello" when the node is starting
+- Enable PinnedImageSet
 ....
 
 # OpenShift Machine Config Operator (MCO) Operations. (AI generated summary)
@@ -88,3 +89,9 @@ Based on CLAUDE.md, here are the operations I can perform:
 - Recover degraded MachinConfigPools by removing offending MCs
 - Sync node annotations (desiredConfig = currentConfig)
 - Force re-apply configuration by creating `/run/machine-config-daemon-force` file on node
+
+## PinnedImageSet (PIS)
+- Creating a PinnedImageSet with template and API version differences
+- Generating PinnedImageSet from a release
+- Checking PinnedImageSet status
+- Verifying pinned images on nodes
