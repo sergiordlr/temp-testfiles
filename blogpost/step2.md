@@ -48,7 +48,6 @@ infra-f509ba5b2d76bcc5a113fd81de75ee99   False      True       False       False
 
   ## Error. Where to find the errors.
 
- 
   ### The MachineOSBuild resource was not created
 
   The process in charge of creating the MachineOSBuild resource it the machine-os-builder pod.
@@ -76,7 +75,7 @@ infra-f509ba5b2d76bcc5a113fd81de75ee99   False      True       False       False
 
 ```
   $ oc -n openshift-machine-config-operator logs machine-os-builder-b8f48488f-nsdbk
-  
+
 ```
 
   #### Debugging the Job
@@ -84,7 +83,7 @@ infra-f509ba5b2d76bcc5a113fd81de75ee99   False      True       False       False
   For example, we create this MOSC
 
 ```
-$ cat mosc.yaml 
+$ cat mosc.yaml
 apiVersion: machineconfiguration.openshift.io/v1
 kind: MachineOSConfig
 metadata:
@@ -116,7 +115,7 @@ $ oc get mcp infra
 NAME    CONFIG                                            UPDATED   UPDATING   DEGRADED   MACHINECOUNT   READYMACHINECOUNT   UPDATEDMACHINECOUNT   DEGRADEDMACHINECOUNT   AGE
 infra   rendered-infra-6208c0db8119cfe2c9c4e42099617a43   False     False      True       1              0                   0                     0                      158m
 
-$ oc get mcp infra -oyaml 
+$ oc get mcp infra -oyaml
 ...
   - lastTransitionTime: "2025-10-17T10:55:00Z"
     message: 'Failed to build OS image for pool infra (MachineOSBuild: infra-32ef35dea3e553071277954842edb33a):
@@ -160,7 +159,7 @@ The build pods have 2 containers: image-build and create-digest-configmap. The c
 Since we are looking for errors in the build proces, we will have a look at the image-build container in the build pod
 
 ```
-$ oc -n openshift-machine-config-operator logs build-infra-32ef35dea3e553071277954842edb33a-2jg2t -c image-build 
+$ oc -n openshift-machine-config-operator logs build-infra-32ef35dea3e553071277954842edb33a-2jg2t -c image-build
 ...
 time="2025-10-17T10:51:32Z" level=debug msg="Running &exec.Cmd{Path:\"/bin/sh\", Args:[]string{\"/bin/sh\", \"-c\", \"curl --fail -L https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64_wrong -o /usr/bin/yq && chmod +x /usr/bin/yq\"}, Env:[]string{\"HTTP_PROXY=\", \"HTTPS_PROXY=\", \"NO_PROXY=\", \"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\", \"HOSTNAME=0430829320a1\", \"HOME=/root\"}, Dir:\"/\", Stdin:(*os.File)(0xc0001280a0), Stdout:(*os.File)(0xc0001280a8), Stderr:(*os.File)(0xc0001280b0), ExtraFiles:[]*os.File(nil), SysProcAttr:(*syscall.SysProcAttr)(0xc00017c0c0), Process:(*os.Process)(nil), ProcessState:(*os.ProcessState)(nil), ctx:context.Context(nil), Err:error(nil), Cancel:(func() error)(nil), WaitDelay:0, childIOFiles:[]io.Closer(nil), parentIOPipes:[]io.Closer(nil), goroutine:[]func() error(nil), goroutineErr:(<-chan error)(nil), ctxResult:(<-chan exec.ctxResult)(nil), createdByStack:[]uint8(nil), lookPathErr:error(nil), cachedLookExtensions:struct { in string; out string }{in:\"\", out:\"\"}} (PATH = \"\")"
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
@@ -182,6 +181,16 @@ Once we have detected our error, editting the MOSC resource and using the right 
 
 In this case it was a problem in the build, but if we see that build processis not failing but nevertheless the build pod fails, we may have a look at the create-digest-configmap container to see if there was any problem creating the configmap with the digest info.
 
+Other kind of errors can be found here, like the ones regarding the lack of permissions to pull or push the images. For example, we can see here the pod reporting that the configured secret doesn't have permissions to push the image
+
+
+```
+$ oc logs build-infra-5e0c7aaf3cf26e8fab9dd111bb336342-czzjb -c image-build
+....
+Copying blob sha256:29f46dbdbc11454d191cd70ebbd18aec36bc2afc72757d38f2ad473b6dba1c75
+Copying blob sha256:d0a1fe72e3dceadb214f96787144ef31672f2b2a429a3798717d739a55a9b574
+Error: pushing image "quay.io/sregidor/sregidor-os:infra-5e0c7aaf3cf26e8fab9dd111bb336342" to "docker://quay.io/sregidor/sregidor-os:infra-5e0c7aaf3cf26e8fab9dd111bb336342": writing blob: initiating layer upload to /v2/sregidor/sregidor-os/blobs/uploads/ in quay.io: unauthorized: access to the requested resource is not authorized
+```
 
 ## Auxiliary Resources
 
@@ -222,7 +231,16 @@ We can describe some of them:
 
 `oc get cm -oyaml containerfile-infra-32ef35dea3e553071277954842edb33a -o jsonpath='{.data.Containerfile}'`
 
-- etc registries and policies configmaps (etc-registries-infra-32ef35dea3e553071277954842edb33a etc-policy-infra-32ef35dea3e553071277954842edb33a) contain the registry configuration and the policies used in the cluster, so that they can eb used too in the build process
+- Etc registries and policies configmaps (etc-registries-infra-32ef35dea3e553071277954842edb33a etc-policy-infra-32ef35dea3e553071277954842edb33a) contain the registry configuration (registries.conf) and the policies (policy.json) used in the cluster, so that they can be used too in the build process. We can check those resource if we see that we have problems with the containers registries.
+
+```
+$ oc -n openshift-machine-config-operator get cm -oyaml etc-registries-infra-32ef35dea3e553071277954842edb33a
+apiVersion: v1
+data:
+  registries.conf: |
+    unqualified-search-registries = ['registry.access.r.com', 'docker.io']
+...
+```
 
 The secrets are the ones configured in the MOSC resource and contain the credentials to pull/push the necessary images
 
