@@ -111,6 +111,7 @@ machineosconfig.machineconfiguration.openshift.io/infra created
 
   We can see the MachineConfigPool degraded
 
+```
 $ oc get mcp infra
 NAME    CONFIG                                            UPDATED   UPDATING   DEGRADED   MACHINECOUNT   READYMACHINECOUNT   UPDATEDMACHINECOUNT   DEGRADEDMACHINECOUNT   AGE
 infra   rendered-infra-6208c0db8119cfe2c9c4e42099617a43   False     False      True       1              0                   0                     0                      158m
@@ -123,8 +124,8 @@ $ oc get mcp infra -oyaml
     reason: BuildFailed
     status: "True"
     type: ImageBuildDegraded
-
 ...
+```
 
 
   We can see the MOSB resource failing
