@@ -53,4 +53,4 @@ alias execInNodes='function __lgb() { unset -f __lgb; set +x; for node in $(oc g
 alias execInWorkers='function __lgb() { unset -f __lgb; set +x; for node in $(oc get nodes  -l node-role.kubernetes.io/worker -o name); do echo -e "\n##### Node $node"; oc debug -q $node -- chroot /host $@; done; set +x; }; __lgb'
 
 alias execInMasters='function __lgb() { unset -f __lgb; set +x; for node in $(oc get nodes  -l node-role.kubernetes.io/master -o name); do echo -e "\n##### Node $node"; oc debug -q $node -- chroot /host $@; done; set +x; }; __lgb'
-alias setosistream='function __setosi() { unset -f __setosi; oc patch mcp $1 --type=merge -p "{\"spec\":{\"osImageStream\":\"$2\"}}"; oc get mcp $1 -o jsonpath="{.spec.osImageStream}"; }; __setosi'
+alias setosistream='function __setosi() { unset -f __setosi; oc patch mcp $1 --type=merge -p "{\"spec\":{\"osImageStream\":{\"name\":\"$2\"}}}"; oc get mcp $1 -o jsonpath="{.spec.osImageStream}"; }; __setosi'
